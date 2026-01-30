@@ -3,169 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <title>Shopee Express | Premium Dashboard</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #F0F2F5; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: #F0F2F5;
+            font-family: 'Inter', sans-serif;
+        }
+
         .shopee-orange { color: #EE4D2D; }
         .bg-shopee { background-color: #EE4D2D; }
-        .card-header { border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 20px; }
-        .dashboard-card { 
-            background: white; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
+
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            transition: transform .2s;
         }
-        .dashboard-card:hover { transform: translateY(-5px); }
-        .loader { border-top-color: #EE4D2D; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .dashboard-card:hover { transform: translateY(-4px); }
+
+        .card-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .loader {
+            border-top-color: #EE4D2D;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        select {
+            border-radius: 10px;
+            border: 1px solid #E0E0E0;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-        <div class="loader rounded-full border-8 border-gray-100 h-24 w-24 mb-4"></div>
-        <h2 class="text-2xl font-black text-gray-800 tracking-tighter italic">SHOPEE <span class="shopee-orange">EXPRESS</span></h2>
-        <p class="text-gray-400 animate-pulse">Otimizando sua frota...</p>
+<!-- LOADER -->
+<div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+    <div class="loader rounded-full border-8 border-gray-100 h-24 w-24 mb-4"></div>
+    <h2 class="text-2xl font-black text-gray-800 tracking-tighter italic">
+        SHOPEE <span class="shopee-orange">EXPRESS</span>
+    </h2>
+    <p class="text-gray-400 animate-pulse">Otimizando sua frota...</p>
+</div>
+
+<!-- HEADER -->
+<header class="bg-white shadow-sm p-4 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-shopee rounded-lg flex items-center justify-center text-white shadow-lg">
+                🚚
+            </div>
+            <h1 class="font-black text-2xl uppercase italic tracking-tighter">
+                SHOPEE <span class="shopee-orange">EXPRESS</span>
+            </h1>
+        </div>
+        <div id="status" class="text-xs font-bold text-white bg-green-500 px-4 py-2 rounded-full">
+            ONLINE
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto p-6 md:p-10">
+
+    <!-- FILTROS -->
+    <div class="dashboard-card p-6 mb-10 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <select id="filtro-hub"></select>
+        <select id="filtro-ciclo"></select>
+        <select id="filtro-transp"></select>
+        <select id="filtro-perfil"></select>
     </div>
 
-    <header class="bg-white shadow-sm p-4 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-shopee rounded-lg flex items-center justify-center text-white shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                </div>
-                <h1 class="font-black text-2xl uppercase italic tracking-tighter">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
-            </div>
-            <div id="status" class="text-xs font-bold text-white bg-green-500 px-4 py-2 rounded-full shadow-inner shadow-green-700">ONLINE</div>
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+        <div class="dashboard-card p-8 border-b-8 border-[#EE4D2D]">
+            <p class="text-sm font-bold text-gray-400 uppercase">Frota Consolidada</p>
+            <h3 id="kpi-total" class="text-5xl font-black text-gray-800">0</h3>
         </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto p-6 md:p-10">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-            <div class="dashboard-card p-8 border-b-8 border-[#EE4D2D]">
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Frota Consolidada</p>
-                <div class="flex items-baseline gap-2">
-                    <h3 id="kpi-total" class="text-5xl font-black text-gray-800">0</h3>
-                    <span class="text-gray-400 font-bold">veículos</span>
-                </div>
-            </div>
-            <div class="dashboard-card p-8 border-b-8 border-blue-600">
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Hubs Ativos</p>
-                <h3 id="kpi-hubs" class="text-5xl font-black text-gray-800">0</h3>
-            </div>
-            <div class="dashboard-card p-8 border-b-8 border-indigo-600">
-                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Sincronização</p>
-                <h3 id="sync-time" class="text-2xl font-black text-gray-800 italic uppercase">--:--</h3>
-            </div>
+        <div class="dashboard-card p-8 border-b-8 border-gray-700">
+            <p class="text-sm font-bold text-gray-400 uppercase">Hubs Ativos</p>
+            <h3 id="kpi-hubs" class="text-5xl font-black text-gray-800">0</h3>
         </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div class="dashboard-card p-8">
-                <div class="card-header flex justify-between items-center">
-                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-lg italic">Análise de Frota por Perfil</h4>
-                    <span class="bg-orange-100 text-[#EE4D2D] text-[10px] font-bold px-2 py-1 rounded">BAR CHART</span>
-                </div>
-                <div class="h-96"><canvas id="chart-perfil"></canvas></div>
-            </div>
-            <div class="dashboard-card p-8">
-                <div class="card-header flex justify-between items-center">
-                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-lg italic">Market Share Parceiros</h4>
-                    <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">PIE CHART</span>
-                </div>
-                <div class="h-96"><canvas id="chart-transp"></canvas></div>
-            </div>
+        <div class="dashboard-card p-8 border-b-8 border-gray-400">
+            <p class="text-sm font-bold text-gray-400 uppercase">Sincronização</p>
+            <h3 id="sync-time" class="text-2xl font-black italic">--:--</h3>
         </div>
-    </main>
+    </div>
 
-    <script>
-        const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+    <!-- GRÁFICOS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
+        <div class="dashboard-card p-8">
+            <div class="card-header font-black italic">Perfil do Veículo</div>
+            <div class="h-80"><canvas id="chart-perfil"></canvas></div>
+        </div>
+        <div class="dashboard-card p-8">
+            <div class="card-header font-black italic">Transportadoras</div>
+            <div class="h-80"><canvas id="chart-transp"></canvas></div>
+        </div>
+    </div>
 
-        let charts = {};
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div class="dashboard-card p-8">
+            <div class="card-header font-black italic">Evolução Diária</div>
+            <div class="h-64"><canvas id="chart-line"></canvas></div>
+        </div>
+        <div class="dashboard-card p-8">
+            <div class="card-header font-black italic">Volume por HUB</div>
+            <div class="h-64"><canvas id="chart-hub"></canvas></div>
+        </div>
+        <div class="dashboard-card p-8">
+            <div class="card-header font-black italic">HUB x Ciclo</div>
+            <div class="h-64"><canvas id="chart-stack"></canvas></div>
+        </div>
+    </div>
 
-        async function start() {
-            try {
-                const response = await fetch(SHEET_CSV + "&cache=" + Date.now());
-                const csvData = await response.text();
-                const json = Papa.parse(csvData, { header: true, skipEmptyLines: true }).data;
-                
-                const cleanData = json.map(r => ({
-                    perfil: r['PERFIL DO VEÍCULO'] || 'N/A',
-                    transp: r['TRANSPORTADORA'] || 'N/A',
-                    qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS'] || 0).replace(/\D/g, '')) || 0,
-                    hub: r['HUB'] || 'N/A'
-                }));
+</main>
 
-                updateDashboard(cleanData);
-                document.getElementById('loading').style.opacity = '0';
-                setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
-                document.getElementById('sync-time').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
 
-            } catch (error) {
-                console.error(error);
-                document.getElementById('status').innerText = 'OFFLINE';
-                document.getElementById('status').classList.replace('bg-green-500', 'bg-red-500');
-            }
+let rawData = [];
+let charts = {};
+
+function fetchData() {
+    Papa.parse(CSV_URL + "&cache=" + Date.now(), {
+        download: true,
+        header: true,
+        complete: res => {
+            rawData = res.data.map(r => ({
+                data: r.DATA,
+                ciclo: r.CICLO,
+                hub: r.HUB,
+                transp: r.TRANSPORTADORA,
+                perfil: r['PERFIL DO VEÍCULO'],
+                qtd: Number(r['QUANTIDADE DE VEÍCULOS']) || 0
+            }));
+            initFilters();
+            applyFilters();
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('sync-time').innerText =
+                new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
         }
+    });
+}
 
-        function updateDashboard(data) {
-            document.getElementById('kpi-total').innerText = data.reduce((acc, curr) => acc + curr.qtd, 0).toLocaleString();
-            document.getElementById('kpi-hubs').innerText = new Set(data.map(d => d.hub)).size;
+function initFilters() {
+    createFilter('filtro-hub','hub');
+    createFilter('filtro-ciclo','ciclo');
+    createFilter('filtro-transp','transp');
+    createFilter('filtro-perfil','perfil');
+}
 
-            const grp = (arr, key) => arr.reduce((acc, d) => { 
-                if(d[key] !== 'N/A') acc[d[key]] = (acc[d[key]] || 0) + d.qtd; 
-                return acc; 
-            }, {});
+function createFilter(id,key) {
+    const el = document.getElementById(id);
+    const values = [...new Set(rawData.map(d => d[key]).filter(Boolean))];
+    el.innerHTML = `<option value="">Todos</option>` +
+        values.map(v => `<option>${v}</option>`).join('');
+    el.onchange = applyFilters;
+}
 
-            const perfis = grp(data, 'perfil');
-            const transps = grp(data, 'transp');
+function applyFilters() {
+    let data = rawData.filter(d =>
+        (!filtroHub.value || d.hub === filtroHub.value) &&
+        (!filtroCiclo.value || d.ciclo === filtroCiclo.value) &&
+        (!filtroTransp.value || d.transp === filtroTransp.value) &&
+        (!filtroPerfil.value || d.perfil === filtroPerfil.value)
+    );
+    updateKPIs(data);
+    renderCharts(data);
+}
 
-            // Gráfico Horizontal (Mais moderno para categorias)
-            renderChart('chart-perfil', 'y', Object.keys(perfis), Object.values(perfis), ['#EE4D2D', '#FF7A5C', '#FFA894', '#333', '#555']);
+const filtroHub = document.getElementById('filtro-hub');
+const filtroCiclo = document.getElementById('filtro-ciclo');
+const filtroTransp = document.getElementById('filtro-transp');
+const filtroPerfil = document.getElementById('filtro-perfil');
 
-            // Gráfico de Pizza com Cores Profissionais
-            renderChart('chart-transp', 'doughnut', Object.keys(transps), Object.values(transps), 
-                ['#EE4D2D', '#2D2D2D', '#4F4F4F', '#828282', '#BDBDBD', '#E0E0E0']);
+function updateKPIs(data){
+    kpi-total.innerText = data.reduce((a,b)=>a+b.qtd,0).toLocaleString();
+    kpi-hubs.innerText = new Set(data.map(d=>d.hub)).size;
+}
+
+function group(data,key){
+    return data.reduce((acc,d)=>{
+        acc[d[key]] = (acc[d[key]]||0)+d.qtd;
+        return acc;
+    },{});
+}
+
+function renderCharts(data){
+    Object.values(charts).forEach(c=>c.destroy());
+    charts = {};
+
+    const perfil = group(data,'perfil');
+    const transp = group(data,'transp');
+    const hub = group(data,'hub');
+
+    charts.perfil = new Chart(chartPerfil,{
+        type:'bar',
+        data:{
+            labels:Object.keys(perfil),
+            datasets:[{data:Object.values(perfil),backgroundColor:'#EE4D2D',borderRadius:8}]
+        },
+        options:{indexAxis:'y',plugins:{legend:{display:false}}}
+    });
+
+    charts.transp = new Chart(chartTransp,{
+        type:'doughnut',
+        data:{
+            labels:Object.keys(transp),
+            datasets:[{data:Object.values(transp),backgroundColor:[
+                '#EE4D2D','#2D2D2D','#828282','#E0E0E0'
+            ]}]
         }
+    });
 
-        function renderChart(id, axis, labels, data, colors) {
-            if (charts[id]) charts[id].destroy();
-            const ctx = document.getElementById(id).getContext('2d');
-            
-            charts[id] = new Chart(ctx, {
-                type: axis === 'y' ? 'bar' : 'doughnut',
-                data: { 
-                    labels, 
-                    datasets: [{ 
-                        data, 
-                        backgroundColor: colors,
-                        borderRadius: 8,
-                        hoverOffset: 20
-                    }] 
-                },
-                options: {
-                    indexAxis: axis,
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            display: axis === 'doughnut', 
-                            position: 'right',
-                            labels: { font: { weight: 'bold', size: 11 }, usePointStyle: true }
-                        }
-                    },
-                    scales: axis === 'y' ? {
-                        x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } },
-                        y: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
-                    } : {}
-                }
-            });
-        }
+    charts.hub = new Chart(chartHub,{
+        type:'bar',
+        data:{labels:Object.keys(hub),datasets:[{data:Object.values(hub),backgroundColor:'#EE4D2D'}]}
+    });
 
-        start();
-        setInterval(start, 300000);
-    </script>
+    const daily = group(data,'data');
+    charts.line = new Chart(chartLine,{
+        type:'line',
+        data:{labels:Object.keys(daily),datasets:[{data:Object.values(daily),borderColor:'#EE4D2D',tension:.4}]}
+    });
+
+    const stack = {};
+    data.forEach(d=>{
+        stack[d.hub] ??= {AM:0,DD:0};
+        stack[d.hub][d.ciclo] += d.qtd;
+    });
+
+    charts.stack = new Chart(chartStack,{
+        type:'bar',
+        data:{
+            labels:Object.keys(stack),
+            datasets:[
+                {label:'AM',data:Object.values(stack).map(v=>v.AM),backgroundColor:'#EE4D2D'},
+                {label:'DD',data:Object.values(stack).map(v=>v.DD),backgroundColor:'#828282'}
+            ]
+        },
+        options:{scales:{x:{stacked:true},y:{stacked:true}}}
+    });
+}
+
+fetchData();
+setInterval(fetchData,300000);
+</script>
 </body>
 </html>
