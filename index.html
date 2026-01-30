@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Shopee Express</title>
+    <title>Shopee Logistics Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,115 +13,117 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
 
     <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
         <div class="loader rounded-full border-4 border-gray-200 h-16 w-16 mb-4"></div>
-        <h2 class="text-xl font-bold text-gray-700">CONECTANDO À BASE...</h2>
-        <p class="text-sm text-gray-400 mt-2 text-center px-4">Se não carregar, verifique se você está logado na conta Shopee ou se a planilha está publicada.</p>
+        <h2 class="text-xl font-bold text-gray-700 uppercase tracking-widest">Carregando Dados...</h2>
     </div>
 
-    <header class="bg-white border-b p-4">
+    <header class="bg-white border-b p-4 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="font-bold text-xl uppercase italic">Shopee <span class="shopee-orange">Logistics</span></h1>
-            <span id="sync" class="text-xs text-gray-400 font-mono italic">Aguardando...</span>
+            <div id="status" class="text-xs text-gray-400 font-mono">Conectando...</div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-[#EE4D2D]">
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-[#EE4D2D]">
                 <p class="text-[10px] font-bold text-gray-400 uppercase">Frota Total</p>
-                <h3 id="kpi-veiculos" class="text-3xl font-black">0</h3>
+                <h3 id="kpi-total" class="text-3xl font-black text-gray-800">0</h3>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Hubs</p>
-                <h3 id="kpi-hubs" class="text-3xl font-black">0</h3>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Hubs Ativos</p>
+                <h3 id="kpi-hubs" class="text-3xl font-black text-gray-800">0</h3>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Principais Operações</p>
+                <h3 class="text-lg font-bold text-gray-800 uppercase italic">Express</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-200">
                 <p class="text-[10px] font-bold text-gray-400 uppercase">Status</p>
-                <h3 class="text-lg font-bold text-green-500 italic uppercase">Ativo</h3>
+                <h3 class="text-lg font-bold text-green-500 uppercase italic">Online</h3>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-4 rounded-lg shadow-sm">
-                <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase">Distribuição por Perfil</h4>
-                <div class="h-64"><canvas id="chart-perfil"></canvas></div>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="text-xs font-bold text-gray-400 mb-6 uppercase">Volume por Perfil de Veículo</h4>
+                <div class="h-72"><canvas id="chart-perfil"></canvas></div>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow-sm">
-                <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase">Participação Transportadora</h4>
-                <div class="h-64"><canvas id="chart-share"></canvas></div>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h4 class="text-xs font-bold text-gray-400 mb-6 uppercase">Market Share Transportadoras</h4>
+                <div class="h-72"><canvas id="chart-transp"></canvas></div>
             </div>
         </div>
     </main>
 
     <script>
-        // Usei o ID da planilha que você mandou por último
-        const SHEET_ID = '1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0';
-        const URL_CSV = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?gid=0&output=csv`;
+        // Link CSV ajustado da sua planilha aberta
+        const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
 
         let charts = {};
 
-        async function init() {
+        async function start() {
             try {
-                // Adicionando um timestamp para evitar cache do navegador
-                const response = await fetch(URL_CSV + '&t=' + Date.now());
-                const csvText = await response.text();
+                const response = await fetch(SHEET_CSV + "&cache=" + Date.now());
+                const csvData = await response.text();
 
-                // Se o Google retornar uma tela de login em vez de CSV
-                if (csvText.includes("<!DOCTYPE html>") || csvText.length < 50) {
-                    throw new Error("LOGIN_REQUIRED");
+                if (csvData.includes("<!DOCTYPE html>")) {
+                    alert("A planilha ainda parece estar restrita. Verifique se a opção 'Exigir login' está desmarcada nas configurações de Publicação da Web.");
+                    return;
                 }
 
-                const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+                const json = Papa.parse(csvData, { header: true, skipEmptyLines: true }).data;
                 
-                const data = parsed.map(r => ({
+                // Processamento
+                const cleanData = json.map(r => ({
                     perfil: r['PERFIL'] || 'N/A',
                     transp: r['TRANSPORTADORA'] || 'N/A',
                     qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS'] || 0).replace(/\D/g, '')) || 0,
                     hub: r['HUB'] || 'N/A'
                 }));
 
-                render(data);
+                updateDashboard(cleanData);
+                
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('sync').innerText = 'Sync: ' + new Date().toLocaleTimeString();
+                document.getElementById('status').innerText = 'Sincronizado: ' + new Date().toLocaleTimeString();
 
-            } catch (err) {
-                console.error("Erro detalhado:", err);
-                if(err.message === "LOGIN_REQUIRED") {
-                    alert("A PLANILHA ESTÁ RESTRITA: Ela só funciona se você estiver logado na conta Shopee ou se mudar a permissão para 'Qualquer Pessoa' na Publicação da Web.");
-                } else {
-                    alert("ERRO DE CONEXÃO: Verifique se a planilha está publicada na web como CSV.");
-                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('status').innerText = 'Erro na conexão';
             }
         }
 
-        function render(data) {
+        function updateDashboard(data) {
             // KPIs
-            document.getElementById('kpi-veiculos').innerText = data.reduce((a, b) => a + b.qtd, 0).toLocaleString();
+            const total = data.reduce((acc, curr) => acc + curr.qtd, 0);
+            document.getElementById('kpi-total').innerText = total.toLocaleString();
             document.getElementById('kpi-hubs').innerText = new Set(data.map(d => d.hub)).size;
 
-            // Agrupamento
-            const group = (key) => data.reduce((acc, d) => { acc[d[key]] = (acc[d[key]] || 0) + d.qtd; return acc; }, {});
+            // Gráficos
+            const grp = (arr, key) => arr.reduce((acc, d) => { acc[d[key]] = (acc[d[key]] || 0) + d.qtd; return acc; }, {});
 
-            const perfis = group('perfil');
-            const transps = group('transp');
+            const perfis = grp(data, 'perfil');
+            const transps = grp(data, 'transp');
 
-            createChart('chart-perfil', 'bar', Object.keys(perfis), Object.values(perfis), '#EE4D2D');
-            createChart('chart-share', 'doughnut', Object.keys(transps), Object.values(transps), ['#EE4D2D', '#333', '#666', '#999']);
+            renderChart('chart-perfil', 'bar', Object.keys(perfis), Object.values(perfis), '#EE4D2D');
+            renderChart('chart-transp', 'doughnut', Object.keys(transps), Object.values(transps), ['#EE4D2D', '#333333', '#777777', '#AAAAAA']);
         }
 
-        function createChart(id, type, labels, values, color) {
+        function renderChart(id, type, labels, data, colors) {
+            if (charts[id]) charts[id].destroy();
             const ctx = document.getElementById(id).getContext('2d');
-            new Chart(ctx, {
+            charts[id] = new Chart(ctx, {
                 type: type,
-                data: { labels, datasets: [{ data: values, backgroundColor: color }] },
+                data: { labels, datasets: [{ data, backgroundColor: colors }] },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        init();
+        start();
+        setInterval(start, 300000); // Atualiza a cada 5 min
     </script>
 </body>
 </html>
