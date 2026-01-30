@@ -2,65 +2,67 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Shopee Logistics Dashboard</title>
+    <title>Shopee Express | Logistics Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .bg-shopee { background-color: #EE4D2D; }
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        body { background-color: #f7f7f7; font-family: 'Roboto', sans-serif; }
         .shopee-orange { color: #EE4D2D; }
+        .bg-shopee { background-color: #EE4D2D; }
+        .card { background: white; border-radius: 12px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .loader { border-top-color: #EE4D2D; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
 
     <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
         <div class="loader rounded-full border-4 border-gray-200 h-16 w-16 mb-4"></div>
-        <h2 class="text-xl font-bold text-gray-700 uppercase tracking-widest">Carregando Dados...</h2>
+        <h2 class="text-xl font-black text-gray-800 tracking-tighter">SHOPEE <span class="shopee-orange">EXPRESS</span></h2>
     </div>
 
     <header class="bg-white border-b p-4 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="font-bold text-xl uppercase italic">Shopee <span class="shopee-orange">Logistics</span></h1>
-            <div id="status" class="text-xs text-gray-400 font-mono">Conectando...</div>
+            <h1 class="font-black text-2xl uppercase italic tracking-tighter">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
+            <div id="status" class="text-[10px] font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full">CONECTANDO...</div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-[#EE4D2D]">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Frota Total</p>
-                <h3 id="kpi-total" class="text-3xl font-black text-gray-800">0</h3>
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card p-6 border-t-4 border-[#EE4D2D]">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Frota Total</p>
+                <h3 id="kpi-total" class="text-4xl font-black text-gray-800">0</h3>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Hubs Ativos</p>
-                <h3 id="kpi-hubs" class="text-3xl font-black text-gray-800">0</h3>
+            <div class="card p-6 border-t-4 border-blue-500">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Hubs Ativos</p>
+                <h3 id="kpi-hubs" class="text-4xl font-black text-gray-800">0</h3>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Principais Operações</p>
-                <h3 class="text-lg font-bold text-gray-800 uppercase italic">Express</h3>
+            <div class="card p-6 border-t-4 border-green-500">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Transportadora Líder</p>
+                <h3 id="kpi-lider" class="text-xl font-bold text-gray-800 truncate">---</h3>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-200">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Status</p>
-                <h3 class="text-lg font-bold text-green-500 uppercase italic">Online</h3>
+            <div class="card p-6 border-t-4 border-orange-300">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Status Base</p>
+                <h3 class="text-xl font-bold text-green-500 italic uppercase">Online</h3>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm">
-                <h4 class="text-xs font-bold text-gray-400 mb-6 uppercase">Volume por Perfil de Veículo</h4>
-                <div class="h-72"><canvas id="chart-perfil"></canvas></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="card p-6">
+                <h4 class="text-sm font-black text-gray-700 mb-6 uppercase tracking-widest border-b pb-2">Distribuição por Tipo de Veículo</h4>
+                <div class="h-80"><canvas id="chart-perfil"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm">
-                <h4 class="text-xs font-bold text-gray-400 mb-6 uppercase">Market Share Transportadoras</h4>
-                <div class="h-72"><canvas id="chart-transp"></canvas></div>
+            <div class="card p-6">
+                <h4 class="text-sm font-black text-gray-700 mb-6 uppercase tracking-widest border-b pb-2">Market Share (Transportadoras)</h4>
+                <div class="h-80"><canvas id="chart-transp"></canvas></div>
             </div>
         </div>
     </main>
 
     <script>
-        // Link CSV ajustado da sua planilha aberta
         const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
 
         let charts = {};
@@ -69,30 +71,23 @@
             try {
                 const response = await fetch(SHEET_CSV + "&cache=" + Date.now());
                 const csvData = await response.text();
-
-                if (csvData.includes("<!DOCTYPE html>")) {
-                    alert("A planilha ainda parece estar restrita. Verifique se a opção 'Exigir login' está desmarcada nas configurações de Publicação da Web.");
-                    return;
-                }
-
                 const json = Papa.parse(csvData, { header: true, skipEmptyLines: true }).data;
                 
-                // Processamento
+                // Mapeamento exato baseado no print da planilha
                 const cleanData = json.map(r => ({
-                    perfil: r['PERFIL'] || 'N/A',
+                    perfil: r['PERFIL DO VEÍCULO'] || 'N/A',
                     transp: r['TRANSPORTADORA'] || 'N/A',
                     qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS'] || 0).replace(/\D/g, '')) || 0,
                     hub: r['HUB'] || 'N/A'
                 }));
 
                 updateDashboard(cleanData);
-                
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('status').innerText = 'Sincronizado: ' + new Date().toLocaleTimeString();
+                document.getElementById('status').innerText = 'ÚLTIMA ATUALIZAÇÃO: ' + new Date().toLocaleTimeString();
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('status').innerText = 'Erro na conexão';
+                document.getElementById('status').innerText = 'ERRO DE CONEXÃO';
             }
         }
 
@@ -102,28 +97,57 @@
             document.getElementById('kpi-total').innerText = total.toLocaleString();
             document.getElementById('kpi-hubs').innerText = new Set(data.map(d => d.hub)).size;
 
-            // Gráficos
+            // Agrupamento para Gráficos
             const grp = (arr, key) => arr.reduce((acc, d) => { acc[d[key]] = (acc[d[key]] || 0) + d.qtd; return acc; }, {});
 
             const perfis = grp(data, 'perfil');
             const transps = grp(data, 'transp');
 
+            // KPI Lider
+            const lider = Object.entries(transps).sort((a,b) => b[1] - a[1])[0];
+            document.getElementById('kpi-lider').innerText = lider ? lider[0] : '---';
+
+            // Gráfico de Barras (Perfil)
             renderChart('chart-perfil', 'bar', Object.keys(perfis), Object.values(perfis), '#EE4D2D');
-            renderChart('chart-transp', 'doughnut', Object.keys(transps), Object.values(transps), ['#EE4D2D', '#333333', '#777777', '#AAAAAA']);
+
+            // Gráfico de Pizza (Share)
+            renderChart('chart-transp', 'doughnut', Object.keys(transps), Object.values(transps), 
+                ['#EE4D2D', '#2D2D2D', '#4A4A4A', '#8E8E8E', '#C0C0C0', '#FF7A5C']);
         }
 
         function renderChart(id, type, labels, data, colors) {
             if (charts[id]) charts[id].destroy();
             const ctx = document.getElementById(id).getContext('2d');
+            
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: type === 'doughnut', position: 'bottom' }
+                },
+                scales: type === 'bar' ? {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                } : {}
+            };
+
             charts[id] = new Chart(ctx, {
                 type: type,
-                data: { labels, datasets: [{ data, backgroundColor: colors }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: { 
+                    labels, 
+                    datasets: [{ 
+                        label: 'Veículos',
+                        data, 
+                        backgroundColor: colors,
+                        borderRadius: 6
+                    }] 
+                },
+                options
             });
         }
 
         start();
-        setInterval(start, 300000); // Atualiza a cada 5 min
+        setInterval(start, 300000); // 5 min refresh
     </script>
 </body>
 </html>
