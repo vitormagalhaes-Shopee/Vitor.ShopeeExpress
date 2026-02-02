@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHOPEE EXPRESS | Logistics Tower V17</title>
+    <title>SHOPEE EXPRESS | Logistics Tower V18</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,7 +13,9 @@
         body { background-color: #F1F5F9; font-family: 'Inter', sans-serif; }
         .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .shopee-bg { background-color: #EE4D2D; }
-        select, input { border: 2px solid #CBD5E1 !important; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 11px; }
+        /* Legendas Pretas nos Filtros */
+        label { color: #000000 !important; font-weight: 900 !important; font-size: 10px; text-transform: uppercase; }
+        select, input { border: 2px solid #CBD5E1 !important; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 11px; color: #000; }
     </style>
 </head>
 <body class="text-slate-900">
@@ -21,83 +23,106 @@
     <header class="bg-[#001529] text-white p-5 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
         <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="shopee-bg p-2 rounded-lg">🚀</div>
+                <div class="shopee-bg p-2 rounded-lg text-xl">🚚</div>
                 <div>
-                    <h1 class="font-black text-xl italic uppercase tracking-tighter">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
+                    <h1 class="font-black text-xl italic uppercase tracking-tighter text-white">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
                     <p class="text-[9px] font-bold text-slate-400 tracking-[0.2em]">LOGISTICS INTELLIGENCE TOWER</p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3 bg-slate-800/50 p-2 rounded-xl">
-                <input type="date" id="d-start">
-                <input type="date" id="d-end">
-                <select id="f-hub"><option value="">HUBS: TODOS</option></select>
-                <select id="f-transp"><option value="">3PL: TODAS</option></select>
-                <button onclick="location.reload()" class="shopee-bg px-4 py-1.5 rounded font-black text-[10px] uppercase">Reset</button>
+            <div class="flex flex-wrap items-center gap-4 bg-white/10 p-3 rounded-xl">
+                <div class="flex flex-col gap-1">
+                    <label>Início</label>
+                    <input type="date" id="d-start">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label>Fim</label>
+                    <input type="date" id="d-end">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label>Hub Operacional</label>
+                    <select id="f-hub"><option value="">TODOS OS HUBS</option></select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label>Transportadora</label>
+                    <select id="f-transp"><option value="">TODAS AS 3PL</option></select>
+                </div>
+                <button onclick="location.reload()" class="shopee-bg text-white px-6 py-2 mt-4 rounded-lg font-black text-[11px] uppercase hover:brightness-110 transition-all">Limpar Filtros</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-[1600px] mx-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="dashboard-card p-5 border-l-8 border-blue-900 text-center">
-                <p class="text-[10px] font-black text-slate-400 uppercase">Total Veículos</p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 text-center">
+            <div class="dashboard-card p-5 border-l-8 border-blue-900">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Frota Total no Período</p>
                 <span id="k-total" class="text-3xl font-black text-blue-900">0</span>
             </div>
-            <div class="dashboard-card p-5 border-l-8 border-[#EE4D2D] text-center"><p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black block truncate">--</span></div>
-            <div class="dashboard-card p-5 border-l-8 border-sky-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Perfil Top</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
-            <div class="dashboard-card p-5 border-l-8 border-slate-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Ref. Base</p><span id="k-date" class="text-lg font-black block">--</span></div>
+            <div class="dashboard-card p-5 border-l-8 border-[#EE4D2D]">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Parceiro Liderança</p>
+                <span id="k-leader" class="text-lg font-black block truncate">--</span>
+            </div>
+            <div class="dashboard-card p-5 border-l-8 border-sky-400">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Perfil Predominante</p>
+                <span id="k-perfil" class="text-lg font-black block">--</span>
+            </div>
+            <div class="dashboard-card p-5 border-l-8 border-slate-400">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Última Ref. Base</p>
+                <span id="k-date" class="text-lg font-black block">--</span>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="dashboard-card p-6 lg:col-span-12">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Tendência de Operação (Volume Diário)</h4>
-                <div class="h-[300px]"><canvas id="c-line"></canvas></div>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 flex items-center gap-2">
+                    <span class="w-1 h-4 shopee-bg"></span> Evolução Operacional (Volume Diário)
+                </h4>
+                <div class="h-[280px]"><canvas id="c-line"></canvas></div>
             </div>
 
             <div class="dashboard-card p-6 lg:col-span-7">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Quantidade de Veículos por Transportadora (Top 10)</h4>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Volume por Transportadora (Top 10)</h4>
                 <div class="h-[450px]"><canvas id="c-bar"></canvas></div>
             </div>
 
             <div class="dashboard-card p-6 lg:col-span-5">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Mix de Perfis de Veículos</h4>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Composição de Frota por Perfil</h4>
                 <div class="h-[450px]"><canvas id="c-pie"></canvas></div>
             </div>
 
             <div class="dashboard-card p-6 lg:col-span-12">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Comparativo de Frota por Hub</h4>
-                <div class="h-[350px]"><canvas id="c-hub"></canvas></div>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Volume Consolidado por Hub</h4>
+                <div class="h-[300px]"><canvas id="c-hub"></canvas></div>
             </div>
         </div>
     </main>
 
     <script>
-        const CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
         Chart.register(ChartDataLabels);
-        let db = [];
+        let database = [];
         let myCharts = {};
 
         async function init() {
-            const r = await fetch(`${CSV}&t=${Date.now()}`);
+            const r = await fetch(`${CSV_URL}&nocache=${Date.now()}`);
             const t = await r.text();
-            const data = Papa.parse(t, {header:true, skipEmptyLines:true}).data;
+            const raw = Papa.parse(t, {header:true, skipEmptyLines:true}).data;
 
-            db = data.map(row => {
-                const dateRaw = row['DATA'];
-                if(!dateRaw || dateRaw === 'Sem data') return null;
+            database = raw.map(row => {
+                const dataStr = row['DATA'];
+                if(!dataStr || dataStr === 'Sem data') return null;
 
                 return {
-                    dateStr: dateRaw,
-                    dateObj: parseDate(dateRaw),
-                    hub: row['NOME HUB'] || row['HUB'] || 'N/D',
+                    dateStr: dataStr,
+                    dateObj: parseDate(dataStr),
+                    hub: (row['NOME HUB'] || row['HUB'] || 'N/D').trim(),
                     transp: (row['TRANSPORTADORA - 3PL'] || 'N/D').trim(),
                     perfil: (row['PERFIL DO VEÍCULO'] || 'N/D').toUpperCase().trim(),
                     qtd: parseInt(String(row['QUANTIDADE DE VEÍCULOS'] || '0').replace(/\D/g,'')) || 0
                 };
             }).filter(d => d && d.qtd > 0 && d.transp !== 'Sem data');
 
-            const dates = db.map(d => d.dateObj).filter(d => d);
+            const dates = database.map(d => d.dateObj).filter(d => d);
             const maxD = new Date(Math.max(...dates));
             const minD = new Date(maxD);
             minD.setDate(maxD.getDate() - 7);
@@ -106,7 +131,7 @@
             document.getElementById('d-end').value = maxD.toISOString().split('T')[0];
 
             const fill = (id, key) => {
-                const list = [...new Set(db.map(d => d[key]))].sort();
+                const list = [...new Set(database.map(d => d[key]))].sort();
                 list.forEach(i => document.getElementById(id).innerHTML += `<option value="${i}">${i}</option>`);
             };
             fill('f-hub', 'hub');
@@ -122,7 +147,7 @@
             const hV = document.getElementById('f-hub').value;
             const tV = document.getElementById('f-transp').value;
 
-            const filtered = db.filter(d => 
+            const filtered = database.filter(d => 
                 d.dateObj >= sV && d.dateObj <= eV &&
                 (!hV || d.hub === hV) && (!tV || d.transp === tV)
             );
@@ -139,11 +164,10 @@
             document.getElementById('k-perfil').innerText = Object.entries(pfMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-date').innerText = document.getElementById('d-end').value.split('-').reverse().join('/');
 
-            // Gráficos com ajustes de legenda e escala
-            draw('c-line', 'line', dtMap, { borderColor: '#001529', backgroundColor: 'rgba(0,21,41,0.05)', fill: true, tension: 0.3 });
+            draw('c-line', 'line', dtMap, { borderColor: '#001529', backgroundColor: 'rgba(0,21,41,0.05)', fill: true });
             draw('c-bar', 'bar', trMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true, 10);
-            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981','#8B5CF6'] });
-            draw('c-hub', 'bar', hbMap, { backgroundColor: '#001529' }, true, 15);
+            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981','#8B5CF6','#FB923C'] });
+            draw('c-hub', 'bar', hbMap, { backgroundColor: '#001529' }, true, 12);
         }
 
         function draw(id, type, dataMap, extra, sort = false, limit = 0) {
@@ -157,27 +181,26 @@
                 type: type,
                 data: {
                     labels: entries.map(x=>x[0]),
-                    datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 5 }]
+                    datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 4 }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    layout: { padding: { top: 30, bottom: 10, right: 30 } },
+                    layout: { padding: { top: 35, right: 40, left: 10, bottom: 10 } },
                     plugins: {
                         legend: { 
                             display: type === 'doughnut', 
                             position: 'right',
-                            labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } }
+                            labels: { boxWidth: 12, font: { size: 9, weight: 'bold' }, color: '#000' }
                         },
                         datalabels: {
-                            color: '#000', font: { weight: 'bold', size: 10 },
+                            color: '#000', font: { weight: '900', size: 10 },
                             anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
-                            offset: 4,
                             formatter: (v) => v.toLocaleString('pt-BR')
                         }
                     },
                     scales: type === 'doughnut' ? {} : {
-                        y: { display: false, grace: '15%' },
-                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 } } }
+                        y: { display: false, grace: '20%' },
+                        x: { grid: { display: false }, ticks: { color: '#000', font: { weight: 'bold', size: 9 } } }
                     }
                 }
             });
