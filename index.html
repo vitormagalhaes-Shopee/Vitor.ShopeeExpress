@@ -3,318 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopee Express | Logistics Intelligence Ops</title>
+    <title>Logistics Intel | Dashboard Executivo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { background-color: #F8F9FA; font-family: 'Inter', sans-serif; color: #2D2D2D; }
-        .shopee-orange { color: #EE4D2D; }
-        .bg-shopee { background-color: #EE4D2D; }
-        .card-header { border-bottom: 1px solid #F0F0F0; padding-bottom: 12px; margin-bottom: 16px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        :root {
+            --brand-primary: #003366; /* Azul Executivo */
+            --brand-secondary: #EE4D2D; /* Shopee Orange */
+            --bg-main: #F1F5F9;
+        }
+        body { background-color: var(--bg-main); font-family: 'Inter', sans-serif; color: #1E293B; }
         .dashboard-card { 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #E5E7EB;
-            position: relative;
+            background: white; border-radius: 8px; 
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); }
-        .loader { border-top-color: #EE4D2D; animation: spin 1s linear infinite; }
+        .kpi-value { font-size: 1.875rem; font-weight: 800; line-height: 1; letter-spacing: -0.025em; color: var(--brand-primary); }
+        .filter-select {
+            @apply text-xs font-semibold bg-white border border-slate-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer hover:border-slate-400;
+        }
+        .loader { border-top-color: var(--brand-primary); animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-        }
-        .no-data-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-weight: bold;
-            color: #9CA3AF;
-            text-transform: uppercase;
-            font-size: 10px;
-            pointer-events: none;
-            background: rgba(255,255,255,0.8);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
     </style>
 </head>
-<body>
-    <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-500">
-        <div class="loader rounded-full border-8 border-gray-100 h-20 w-20 mb-4"></div>
-        <h2 class="text-xl font-black text-gray-800 tracking-tighter italic uppercase">SHOPEE <span class="shopee-orange">EXPRESS</span></h2>
-        <p class="text-xs font-bold text-gray-400 tracking-widest uppercase mt-2">Logistics Intelligence</p>
+<body class="antialiased">
+
+    <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-50">
+        <div class="loader rounded-full border-4 border-slate-200 h-12 w-12 mb-4"></div>
+        <p class="text-sm font-bold text-slate-500 tracking-widest uppercase">Carregando Inteligência Logística...</p>
     </div>
 
-    <header class="bg-white border-b border-gray-200 p-4 sticky top-0 z-40">
-        <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-shopee rounded-lg flex items-center justify-center text-white shadow-lg shadow-orange-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+    <header class="bg-[#001529] text-white p-4 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-2 bg-white/10 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                    </svg>
                 </div>
                 <div>
-                    <h1 class="font-black text-xl uppercase italic tracking-tighter leading-none">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
-                    <span class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Operations Control Center</span>
+                    <h1 class="font-extrabold text-lg tracking-tight uppercase">Control Center <span class="text-orange-500">Express</span></h1>
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Performance de Frota & Malha Logística</p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-200">
-                <select id="filter-hub" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
-                    <option value="">TODOS OS HUBS</option>
-                </select>
-                <select id="filter-ciclo" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
-                    <option value="">TODOS OS CICLOS</option>
-                </select>
-                <select id="filter-transp" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
-                    <option value="">TODAS AS TRANSPORTADORAS</option>
-                </select>
-                <select id="filter-perfil" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
-                    <option value="">TODOS OS PERFIS</option>
-                </select>
-                <button onclick="resetFilters()" class="text-xs font-bold text-gray-500 hover:text-orange-600 px-2 uppercase">Limpar</button>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-bold text-slate-400 mb-1 ml-1 uppercase">Hub Operacional</label>
+                    <select id="filter-hub" class="filter-select text-slate-800"><option value="">TODOS</option></select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-bold text-slate-400 mb-1 ml-1 uppercase">Ciclo (AM/DD)</label>
+                    <select id="filter-ciclo" class="filter-select text-slate-800"><option value="">TODOS</option></select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-bold text-slate-400 mb-1 ml-1 uppercase">Transportadora</label>
+                    <select id="filter-transp" class="filter-select text-slate-800"><option value="">TODAS</option></select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-bold text-slate-400 mb-1 ml-1 uppercase">Período</label>
+                    <select id="filter-date" class="filter-select text-slate-800"><option value="">ÚLTIMOS 7 DIAS</option></select>
+                </div>
+                <button onclick="resetFilters()" class="mt-4 px-3 py-2 text-[10px] font-bold bg-slate-700 hover:bg-slate-600 rounded transition-colors">LIMPAR</button>
             </div>
-
-            <div id="status" class="hidden md:block text-[10px] font-black text-white bg-green-500 px-3 py-1.5 rounded-md">LIVE</div>
         </div>
     </header>
 
-    <main class="max-w-[1400px] mx-auto p-4 md:p-8">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="dashboard-card p-6 border-l-4 border-[#EE4D2D]">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Frota Consolidada</p>
-                <div class="flex items-baseline gap-2">
-                    <h3 id="kpi-total" class="text-3xl font-black text-gray-800 tracking-tight">0</h3>
-                    <span class="text-xs font-bold text-gray-400 uppercase">veículos</span>
+    <main class="max-w-[1600px] mx-auto p-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="dashboard-card p-5 border-t-4 border-blue-900">
+                <p class="text-[11px] font-bold text-slate-500 uppercase mb-2">Total de Veículos em Operação</p>
+                <div class="flex items-end justify-between">
+                    <span id="kpi-total" class="kpi-value">0</span>
+                    <span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded">ATIVOS</span>
                 </div>
             </div>
-            <div class="dashboard-card p-6 border-l-4 border-gray-800">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hubs Ativos</p>
-                <h3 id="kpi-hubs" class="text-3xl font-black text-gray-800 tracking-tight">0</h3>
+            <div class="dashboard-card p-5 border-t-4 border-orange-500">
+                <p class="text-[11px] font-bold text-slate-500 uppercase mb-2">Transportadora Líder</p>
+                <span id="kpi-leader" class="kpi-value text-slate-700 text-xl truncate block">--</span>
             </div>
-            <div class="dashboard-card p-6 border-l-4 border-orange-200">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Modais Ativos</p>
-                <h3 id="kpi-modais" class="text-3xl font-black text-gray-800 tracking-tight">0</h3>
+            <div class="dashboard-card p-5 border-t-4 border-slate-400">
+                <p class="text-[11px] font-bold text-slate-500 uppercase mb-2">Modal Predominante</p>
+                <span id="kpi-modal" class="kpi-value text-slate-700 text-xl block">--</span>
             </div>
-            <div class="dashboard-card p-6 border-l-4 border-gray-200">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Última Sincronização</p>
-                <h3 id="sync-time" class="text-3xl font-black text-gray-400 tracking-tight italic uppercase">--:--</h3>
+            <div class="dashboard-card p-5 border-t-4 border-blue-300">
+                <p class="text-[11px] font-bold text-slate-500 uppercase mb-2">Ref. Base de Dados</p>
+                <span id="kpi-date" class="kpi-value text-slate-700 text-xl block">--</span>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="dashboard-card p-6 lg:col-span-12">
-                <div class="card-header flex justify-between items-center">
-                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Evolução Diária da Frota</h4>
+            
+            <div class="dashboard-card p-6 lg:col-span-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm">Tendência de Ocupação da Frota</h4>
+                        <p class="text-xs text-slate-400">Volume total consolidado por data</p>
+                    </div>
+                    <div id="evolution-badge" class="px-2 py-1 bg-blue-50 text-blue-700 font-bold text-[10px] rounded border border-blue-100"></div>
                 </div>
-                <div class="h-64 relative"><canvas id="chart-evolution"></canvas></div>
+                <div class="h-[300px]"><canvas id="chart-evolution"></canvas></div>
             </div>
-            <div class="dashboard-card p-6 lg:col-span-7">
-                <div class="card-header flex justify-between items-center">
-                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Volume por Perfil de Veículo</h4>
-                </div>
-                <div class="h-80 relative"><canvas id="chart-perfil"></canvas></div>
+
+            <div class="dashboard-card p-6 lg:col-span-4">
+                <h4 class="font-bold text-slate-800 text-sm mb-1">Market Share Parceiros</h4>
+                <p class="text-xs text-slate-400 mb-6">Distribuição Top 5 Transportadoras</p>
+                <div class="h-[300px]"><canvas id="chart-market-share"></canvas></div>
             </div>
-            <div class="dashboard-card p-6 lg:col-span-5">
-                <div class="card-header flex justify-between items-center">
-                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Market Share Parceiros</h4>
-                </div>
-                <div class="h-80 relative"><canvas id="chart-transp"></canvas></div>
+
+            <div class="dashboard-card p-6 lg:col-span-4">
+                <h4 class="font-bold text-slate-800 text-sm mb-6 uppercase tracking-tight">Mix de Modais (Top Perfis)</h4>
+                <div class="h-[350px]"><canvas id="chart-modal-dist"></canvas></div>
             </div>
-            <div class="dashboard-card p-6 lg:col-span-6">
-                <div class="card-header flex justify-between items-center">
-                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Volume por Hub</h4>
-                </div>
-                <div class="h-72 relative"><canvas id="chart-hubs"></canvas></div>
+
+            <div class="dashboard-card p-6 lg:col-span-8">
+                <h4 class="font-bold text-slate-800 text-sm mb-6 uppercase tracking-tight">Produtividade por Unidade (Hub)</h4>
+                <div class="h-[350px]"><canvas id="chart-hub-volume"></canvas></div>
             </div>
-            <div class="dashboard-card p-6 lg:col-span-6">
-                <div class="card-header flex justify-between items-center">
-                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">AM vs DD por Hub</h4>
-                </div>
-                <div class="h-72 relative"><canvas id="chart-ciclo-hub"></canvas></div>
-            </div>
+
         </div>
     </main>
 
     <script>
         const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        
         let rawData = [];
         let charts = {};
-        const colors = { orange: '#EE4D2D', dark: '#2D2D2D', palette: ['#EE4D2D', '#2D2D2D', '#555555', '#828282', '#A6A6A6'] };
-
-        // ETAPA 2 & 3: NORMALIZAÇÃO E DATA
-        const normalizeText = (v) => String(v || '').trim().toUpperCase();
-        const parseDateSafe = (v) => {
-            if (!v) return null;
-            const parts = v.split('/');
-            if (parts.length !== 3) return null;
-            const d = new Date(parts[2], parts[1] - 1, parts[0]);
-            return isNaN(d.getTime()) ? null : d;
+        
+        // ETAPA 5: Cores Executivas
+        const brandColors = {
+            primary: '#003366', // Azul Marinho
+            secondary: '#EE4D2D', // Laranja
+            accent: '#0EA5E9', // Azul Claro
+            neutral: '#64748B',
+            grid: '#F1F5F9',
+            palette: ['#003366', '#0EA5E9', '#3B82F6', '#6366F1', '#94A3B8']
         };
 
-        const findCol = (headers, targets) => headers.find(h => targets.some(t => h.toUpperCase().includes(t.toUpperCase()))) || '';
-
-        // ETAPA 1: ESTABILIDADE
-        function safeInit() {
-            const loader = document.getElementById('loading');
-            loader.style.opacity = '0';
-            setTimeout(() => loader.style.display = 'none', 500);
-            document.getElementById('sync-time').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }
+        // Configurações Globais Chart.js
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#64748B';
+        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+        Chart.defaults.plugins.legend.labels.boxWidth = 8;
 
         async function init() {
             try {
-                const res = await fetch(`${SHEET_CSV}&cache=${Date.now()}`);
-                const csvText = await res.text();
-                const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-                const headers = parsed.meta.fields;
-
-                const cols = {
-                    data: findCol(headers, ['DATA']),
-                    ciclo: findCol(headers, ['CICLO']),
-                    hub: findCol(headers, ['HUB']),
-                    transp: findCol(headers, ['TRANSPORTADORA']),
-                    perfil: findCol(headers, ['PERFIL']),
-                    qtd: findCol(headers, ['QUANTIDADE', 'QTD'])
-                };
-
-                rawData = parsed.data.map(r => {
-                    const dt = parseDateSafe(r[cols.data]);
-                    if (!dt) return null;
-                    return {
-                        ts: dt.getTime(),
-                        ds: r[cols.data],
-                        ciclo: normalizeText(r[cols.ciclo]) || 'N/D',
-                        hub: normalizeText(r[cols.hub]) || 'N/D',
-                        transp: normalizeText(r[cols.transp]) || 'N/D',
-                        perfil: normalizeText(r[cols.perfil]) || 'N/D',
-                        qtd: parseInt(String(r[cols.qtd] || 0).replace(/\D/g, '')) || 0
-                    };
-                }).filter(Boolean);
+                const response = await fetch(`${SHEET_CSV}&cache=${Date.now()}`);
+                const csvData = await response.text();
+                const parsed = Papa.parse(csvData, { header: true, skipEmptyLines: true }).data;
+                
+                // --- ETAPA 1: SANITIZAÇÃO DE DADOS ---
+                const validPerfis = ['VUC', 'PASSEIO', 'MOTO', 'VAN', 'FIORINO', 'VAN/KOMBI', 'UTILITÁRIO'];
+                
+                rawData = parsed.filter(r => {
+                    const perfil = String(r['PERFIL DO VEÍCULO'] || '').toUpperCase();
+                    const hub = r['HUB'];
+                    const transp = r['TRANSPORTADORA'];
+                    
+                    // Remove lixo: #REF, vazios, N/D e perfis não listados
+                    return hub && hub !== '#REF!' && hub !== 'N/D' &&
+                           transp && transp !== '#REF!' &&
+                           validPerfis.includes(perfil);
+                }).map(r => ({
+                    date: r['DATA'],
+                    ciclo: String(r['CICLO (AM / DD)'] || '').toUpperCase().includes('AM') ? 'AM' : 'DD',
+                    hub: r['HUB'],
+                    transp: r['TRANSPORTADORA'],
+                    perfil: String(r['PERFIL DO VEÍCULO']).toUpperCase(),
+                    qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS'] || 0).replace(/\D/g, '')) || 0
+                }));
 
                 populateFilters();
-                processAndUpdate();
-            } catch (e) {
-                console.error("Dashboard Load Error:", e);
-                processAndUpdate();
-            } finally {
-                safeInit();
+                updateDashboard();
+
+                document.getElementById('loading').classList.add('opacity-0');
+                setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
+            } catch (err) {
+                console.error("Erro Crítico:", err);
             }
         }
 
         function populateFilters() {
-            const fill = (id, key) => {
+            const getUnique = (key) => [...new Set(rawData.map(item => item[key]))].sort();
+            
+            const fill = (id, items) => {
                 const el = document.getElementById(id);
-                const vals = [...new Set(rawData.map(d => d[key]))].sort();
-                el.innerHTML = `<option value="">${el.options[0].text}</option>`;
-                vals.forEach(v => { if(v !== 'N/D') el.innerHTML += `<option value="${v}">${v}</option>`; });
-                el.onchange = processAndUpdate;
+                el.innerHTML = `<option value="">${id.includes('transp') ? 'TODAS' : 'TODOS'}</option>`;
+                items.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.innerText = item;
+                    el.appendChild(opt);
+                });
             };
-            fill('filter-hub', 'hub'); fill('filter-ciclo', 'ciclo');
-            fill('filter-transp', 'transp'); fill('filter-perfil', 'perfil');
+
+            fill('filter-hub', getUnique('hub'));
+            fill('filter-ciclo', ['AM', 'DD']);
+            fill('filter-transp', getUnique('transp'));
+            
+            // Filtro de Data (Últimos 30 dias na lista)
+            const dates = getUnique('date').reverse().slice(0, 15);
+            fill('filter-date', dates);
+            
+            ['filter-hub', 'filter-ciclo', 'filter-transp', 'filter-date'].forEach(id => {
+                document.getElementById(id).addEventListener('change', updateDashboard);
+            });
         }
 
         function resetFilters() {
-            ['filter-hub', 'filter-ciclo', 'filter-transp', 'filter-perfil'].forEach(id => document.getElementById(id).value = "");
-            processAndUpdate();
+            ['filter-hub', 'filter-ciclo', 'filter-transp', 'filter-date'].forEach(id => document.getElementById(id).value = "");
+            updateDashboard();
         }
 
-        function processAndUpdate() {
-            const f = {
-                h: document.getElementById('filter-hub').value,
-                c: document.getElementById('filter-ciclo').value,
-                t: document.getElementById('filter-transp').value,
-                p: document.getElementById('filter-perfil').value
-            };
+        function updateDashboard() {
+            const fHub = document.getElementById('filter-hub').value;
+            const fCiclo = document.getElementById('filter-ciclo').value;
+            const fTransp = document.getElementById('filter-transp').value;
+            const fDate = document.getElementById('filter-date').value;
 
-            const filtered = rawData.filter(d => 
-                (!f.h || d.hub === f.h) && (!f.c || d.ciclo === f.c) &&
-                (!f.t || d.transp === f.t) && (!f.p || d.perfil === f.p)
-            );
+            let filtered = rawData.filter(d => {
+                return (fHub === "" || d.hub === fHub) &&
+                       (fCiclo === "" || d.ciclo === fCiclo) &&
+                       (fTransp === "" || d.transp === fTransp) &&
+                       (fDate === "" || d.date === fDate);
+            });
 
-            // KPIs
-            document.getElementById('kpi-total').innerText = filtered.reduce((a, b) => a + b.qtd, 0).toLocaleString('pt-BR');
-            document.getElementById('kpi-hubs').innerText = new Set(filtered.map(d => d.hub)).size;
-            document.getElementById('kpi-modais').innerText = new Set(filtered.map(d => d.perfil)).size;
+            // Atualização de KPIs (ETAPA 3)
+            const totalVehicles = filtered.reduce((acc, curr) => acc + curr.qtd, 0);
+            document.getElementById('kpi-total').innerText = totalVehicles.toLocaleString('pt-BR');
 
-            updateCharts(filtered);
+            const transpGroups = groupBy(filtered, 'transp');
+            const leader = Object.entries(transpGroups).sort((a,b) => b[1] - a[1])[0];
+            document.getElementById('kpi-leader').innerText = leader ? leader[0] : '--';
+
+            const modalGroups = groupBy(filtered, 'perfil');
+            const topModal = Object.entries(modalGroups).sort((a,b) => b[1] - a[1])[0];
+            document.getElementById('kpi-modal').innerText = topModal ? topModal[0] : '--';
+
+            const lastDate = [...new Set(rawData.map(d => d.date))].sort().reverse()[0];
+            document.getElementById('kpi-date').innerText = lastDate || '--';
+
+            renderCharts(filtered);
         }
 
-        function updateCharts(data) {
-            const check = (id) => {
-                const p = document.getElementById(id).parentElement;
-                const ex = p.querySelector('.no-data-overlay');
-                if (data.length === 0) { if(!ex) p.innerHTML += `<div class="no-data-overlay">Sem dados</div>`; }
-                else if(ex) ex.remove();
-            };
+        function renderCharts(data) {
+            // 1. Evolução Diária (ETAPA 4.1)
+            const dailyData = groupBy(data, 'date');
+            const sortedDates = Object.keys(dailyData).sort((a,b) => parseDate(a) - parseDate(b)).slice(-7);
+            const evolutionValues = sortedDates.map(d => dailyData[d]);
+            
+            document.getElementById('evolution-badge').innerText = `TOTAL: ${evolutionValues.reduce((a,b)=>a+b,0)}`;
 
-            // 1. Evolução
-            const dMap = data.reduce((acc, d) => { acc[d.ts] = { l: d.ds, v: (acc[d.ts]?.v || 0) + d.qtd }; return acc; }, {});
-            const sortedTs = Object.keys(dMap).sort((a,b) => Number(a) - Number(b));
-            renderLine('chart-evolution', sortedTs.map(t => dMap[t].l), sortedTs.map(t => dMap[t].v));
+            renderLine('chart-evolution', sortedDates, evolutionValues);
 
-            // 2. Perfil
-            const pMap = data.reduce((acc, d) => { acc[d.perfil] = (acc[d.perfil] || 0) + d.qtd; return acc; }, {});
-            const sP = Object.entries(pMap).sort((a,b) => b[1] - a[1]);
-            renderBar('chart-perfil', sP.map(x => x[0]), sP.map(x => x[1]), 'y');
+            // 2. Market Share (ETAPA 4.5) - Top 5 + Outros
+            const transpMap = groupBy(data, 'transp');
+            const sortedTransp = Object.entries(transpMap).sort((a,b) => b[1] - a[1]);
+            const top5 = sortedTransp.slice(0, 5);
+            const othersSum = sortedTransp.slice(5).reduce((acc, curr) => acc + curr[1], 0);
+            if(othersSum > 0) top5.push(['OUTROS', othersSum]);
 
-            // 3. Market Share
-            const tMap = data.reduce((acc, d) => { acc[d.transp] = (acc[d.transp] || 0) + d.qtd; return acc; }, {});
-            const sT = Object.entries(tMap).sort((a,b) => b[1] - a[1]);
-            const top = sT.slice(0, 5);
-            const oth = sT.slice(5).reduce((a, b) => a + b[1], 0);
-            if(oth > 0) top.push(['OUTROS', oth]);
-            renderDoughnut('chart-transp', top.map(x => x[0]), top.map(x => x[1]));
+            renderDoughnut('chart-market-share', top5.map(x => x[0]), top5.map(x => x[1]));
 
-            // 4. Hubs & Stacked
-            const hMap = data.reduce((acc, d) => { acc[d.hub] = (acc[d.hub] || 0) + d.qtd; return acc; }, {});
-            const sH = Object.entries(hMap).sort((a,b) => b[1] - a[1]).slice(0, 10);
-            const hLabels = sH.map(x => x[0]);
-            renderBar('chart-hubs', hLabels, sH.map(x => x[1]), 'x');
-            renderStacked('chart-ciclo-hub', hLabels, data);
+            // 3. Modal Distribution (ETAPA 4.4)
+            const modalMap = groupBy(data, 'perfil');
+            const sortedModals = Object.entries(modalMap).sort((a,b) => b[1] - a[1]);
+            renderBar('chart-modal-dist', sortedModals.map(x => x[0]), sortedModals.map(x => x[1]), 'y');
 
-            ['chart-evolution', 'chart-perfil', 'chart-transp', 'chart-hubs', 'chart-ciclo-hub'].forEach(check);
+            // 4. Hub Volume (ETAPA 4.6)
+            const hubMap = groupBy(data, 'hub');
+            const sortedHubs = Object.entries(hubMap).sort((a,b) => b[1] - a[1]).slice(0, 12);
+            renderBar('chart-hub-volume', sortedHubs.map(x => x[0]), sortedHubs.map(x => x[1]), 'x');
         }
 
-        function renderLine(id, l, v) {
+        // --- HELPERS ---
+        function groupBy(arr, key) {
+            return arr.reduce((acc, curr) => {
+                acc[curr[key]] = (acc[curr[key]] || 0) + curr.qtd;
+                return acc;
+            }, {});
+        }
+
+        function parseDate(s) {
+            const p = s.split('/');
+            return new Date(p[2], p[1]-1, p[0]);
+        }
+
+        function renderLine(id, labels, values) {
             if(charts[id]) charts[id].destroy();
-            charts[id] = new Chart(document.getElementById(id), {
-                type: 'line', data: { labels: l, datasets: [{ data: v, borderColor: colors.orange, tension: 0.3, fill: true, backgroundColor: 'rgba(238,77,45,0.1)' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            const ctx = document.getElementById(id).getContext('2d');
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Veículos',
+                        data: values,
+                        borderColor: brandColors.primary,
+                        backgroundColor: 'rgba(0, 51, 102, 0.05)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: brandColors.grid }, border: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
             });
         }
 
-        function renderBar(id, l, v, axis) {
+        function renderBar(id, labels, values, axis) {
             if(charts[id]) charts[id].destroy();
             charts[id] = new Chart(document.getElementById(id), {
-                type: 'bar', data: { labels: l, datasets: [{ data: v, backgroundColor: axis === 'y' ? colors.palette : colors.orange }] },
-                options: { indexAxis: axis, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: axis === 'y' ? brandColors.palette : brandColors.accent,
+                        borderRadius: 4,
+                        barThickness: 18
+                    }]
+                },
+                options: {
+                    indexAxis: axis,
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+                        y: { grid: { color: brandColors.grid }, ticks: { font: { size: 9 } } }
+                    }
+                }
             });
         }
 
-        function renderDoughnut(id, l, v) {
+        function renderDoughnut(id, labels, values) {
             if(charts[id]) charts[id].destroy();
             charts[id] = new Chart(document.getElementById(id), {
-                type: 'doughnut', data: { labels: l, datasets: [{ data: v, backgroundColor: colors.palette }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-
-        function renderStacked(id, hLabels, data) {
-            if(charts[id]) charts[id].destroy();
-            const am = hLabels.map(h => data.filter(d => d.hub === h && d.ciclo.includes('AM')).reduce((a,b) => a + b.qtd, 0));
-            const dd = hLabels.map(h => data.filter(d => d.hub === h && d.ciclo.includes('DD')).reduce((a,b) => a + b.qtd, 0));
-            charts[id] = new Chart(document.getElementById(id), {
-                type: 'bar', data: { labels: hLabels, datasets: [{ label: 'AM', data: am, backgroundColor: colors.orange }, { label: 'DD', data: dd, backgroundColor: colors.dark }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: brandColors.palette,
+                        hoverOffset: 10,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, font: { size: 10 } } }
+                    }
+                }
             });
         }
 
