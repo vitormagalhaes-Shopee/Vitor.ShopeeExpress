@@ -11,69 +11,43 @@
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-body { background:#F8F9FA; font-family:'Inter',sans-serif; color:#2D2D2D; }
-.shopee-orange { color:#EE4D2D }
-.bg-shopee { background:#EE4D2D }
-.dashboard-card {
-  background:white; border-radius:12px;
-  box-shadow:0 4px 6px -1px rgba(0,0,0,.05);
-  border:1px solid #E5E7EB;
-}
-.loader { border-top-color:#EE4D2D; animation:spin 1s linear infinite }
-@keyframes spin { to { transform:rotate(360deg) } }
+body { font-family: 'Inter', sans-serif; background:#F8F9FA }
 </style>
 </head>
 
 <body>
 
-<!-- LOADER -->
-<div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-  <div class="loader rounded-full border-8 border-gray-100 h-20 w-20 mb-4"></div>
-  <h2 class="text-xl font-black italic">SHOPEE <span class="shopee-orange">EXPRESS</span></h2>
-  <p class="text-xs font-bold text-gray-400 tracking-widest uppercase">Logistics Intelligence</p>
+<div id="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+  <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-500"></div>
 </div>
 
-<header class="bg-white border-b p-4 sticky top-0 z-40">
-  <div class="max-w-[1400px] mx-auto flex justify-between items-center">
-    <h1 class="font-black italic">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
+<main class="max-w-[1400px] mx-auto p-6">
 
-    <div class="flex gap-2">
-      <select id="filter-hub"><option value="">TODOS HUBS</option></select>
-      <select id="filter-ciclo"><option value="">TODOS CICLOS</option></select>
-      <select id="filter-transp"><option value="">TODAS TRANSP.</option></select>
-      <select id="filter-perfil"><option value="">TODOS PERFIS</option></select>
-      <select id="filter-days">
-        <option value="7">7 dias</option>
-        <option value="14">14 dias</option>
-        <option value="30">30 dias</option>
-      </select>
-      <button onclick="resetFilters()">Limpar</button>
+  <!-- KPIs -->
+  <div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="bg-white p-4 rounded shadow">
+      <p class="text-xs text-gray-400 font-bold uppercase">Frota Total</p>
+      <h2 id="kpi-total" class="text-3xl font-black">0</h2>
     </div>
-
-    <div id="status" class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded">LIVE</div>
+    <div class="bg-white p-4 rounded shadow">
+      <p class="text-xs text-gray-400 font-bold uppercase">Ciclo Predominante</p>
+      <h2 id="kpi-ciclo" class="text-3xl font-black">-</h2>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+      <p class="text-xs text-gray-400 font-bold uppercase">Última Sync</p>
+      <h2 id="sync-time" class="text-3xl font-black">--:--</h2>
+    </div>
   </div>
-</header>
 
-<main class="max-w-[1400px] mx-auto p-6 grid gap-6">
-
-<div class="grid grid-cols-3 gap-4">
-  <div class="dashboard-card p-4">
-    <p class="text-xs text-gray-400">Frota</p>
-    <h2 id="kpi-total" class="text-3xl font-black">0</h2>
+  <!-- Gráficos -->
+  <div class="grid grid-cols-2 gap-6">
+    <div class="bg-white p-4 rounded shadow h-72">
+      <canvas id="chart-evolution"></canvas>
+    </div>
+    <div class="bg-white p-4 rounded shadow h-72">
+      <canvas id="chart-perfil"></canvas>
+    </div>
   </div>
-  <div class="dashboard-card p-4">
-    <p class="text-xs text-gray-400">Ciclo</p>
-    <h2 id="kpi-ciclo" class="text-3xl font-black">-</h2>
-  </div>
-  <div class="dashboard-card p-4">
-    <p class="text-xs text-gray-400">Sync</p>
-    <h2 id="sync-time" class="text-3xl font-black">--:--</h2>
-  </div>
-</div>
-
-<div class="dashboard-card p-6"><canvas id="chart-evolution"></canvas></div>
-<div class="dashboard-card p-6"><canvas id="chart-perfil"></canvas></div>
-<div class="dashboard-card p-6"><canvas id="chart-transp"></canvas></div>
 
 </main>
 
@@ -83,97 +57,90 @@ const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt
 let rawData = [];
 let charts = {};
 
-Chart.defaults.font.family = "'Inter', sans-serif";
+function normalizeDate(value) {
+  if (!value) return null;
+
+  if (!isNaN(value)) {
+    const base = new Date(1899, 11, 30);
+    return new Date(base.getTime() + value * 86400000);
+  }
+
+  value = String(value).split(' ')[0];
+
+  if (value.includes('/')) {
+    const [d, m, y] = value.split('/');
+    return new Date(`${y}-${m}-${d}`);
+  }
+
+  const d = new Date(value);
+  return isNaN(d) ? null : d;
+}
 
 async function init() {
-  try {
-    const response = await fetch(`${SHEET_CSV}&cache=${Date.now()}`);
-    const csv = await response.text();
+  const res = await fetch(SHEET_CSV + "&cache=" + Date.now());
+  const csv = await res.text();
+  const parsed = Papa.parse(csv, { header:true, skipEmptyLines:true }).data;
 
-    rawData = Papa.parse(csv,{header:true,skipEmptyLines:true}).data
-      .map(r => ({
-        data:new Date(r['DATA']),
-        hub:r['HUB'],
-        ciclo:r['CICLO (AM / DD)'],
-        transp:r['TRANSPORTADORA'],
-        perfil:r['PERFIL DO VEÍCULO'],
-        qtd:parseInt(r['QUANTIDADE DE VEÍCULOS'])||0
-      }))
-      .filter(d=>d.qtd>0);
+  rawData = parsed.map(r => ({
+    data: normalizeDate(r['DATA']),
+    ciclo: String(r['CICLO (AM / DD)'] || '').toUpperCase(),
+    perfil: String(r['PERFIL DO VEÍCULO'] || '').toUpperCase(),
+    qtd: Number(String(r['QUANTIDADE DE VEÍCULOS'] || '0').replace(/\D/g,'')) || 0
+  })).filter(d => d.data && d.qtd > 0);
 
-    populateFilters();
-    attachFilterEvents();
-    processAndUpdate();
+  updateKPIs(rawData);
+  updateCharts(rawData);
 
-    document.getElementById('loading').style.display='none';
-    document.getElementById('sync-time').innerText =
-      new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-
-  } catch(e) {
-    console.error(e);
-    const s=document.getElementById('status');
-    s.innerText='ERRO';
-    s.classList.replace('bg-green-500','bg-red-500');
-  }
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('sync-time').innerText =
+    new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
 
-function populateFilters() {
-  const unique=k=>[...new Set(rawData.map(d=>d[k]).filter(Boolean))];
-  const fill=(id,list)=>{
-    const el=document.getElementById(id);
-    el.innerHTML=el.options[0].outerHTML;
-    list.forEach(v=>{
-      const o=document.createElement('option');
-      o.value=v;o.innerText=v;el.appendChild(o);
-    });
-  };
-  fill('filter-hub',unique('hub'));
-  fill('filter-ciclo',unique('ciclo'));
-  fill('filter-transp',unique('transp'));
-  fill('filter-perfil',unique('perfil'));
+function updateKPIs(data) {
+  const total = data.reduce((a,b)=>a+b.qtd,0);
+  const ciclos = {};
+  data.forEach(d => ciclos[d.ciclo]=(ciclos[d.ciclo]||0)+d.qtd);
+
+  const top = Object.entries(ciclos).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-';
+
+  document.getElementById('kpi-total').innerText = total.toLocaleString('pt-BR');
+  document.getElementById('kpi-ciclo').innerText = top;
 }
 
-function attachFilterEvents() {
-  ['filter-hub','filter-ciclo','filter-transp','filter-perfil','filter-days']
-    .forEach(id=>document.getElementById(id).addEventListener('change',processAndUpdate));
+function updateCharts(data) {
+  const dateMap = {};
+  data.forEach(d=>{
+    const k = d.data.toISOString().slice(0,10);
+    dateMap[k]=(dateMap[k]||0)+d.qtd;
+  });
+
+  const dates = Object.keys(dateMap).slice(-7);
+  const values = dates.map(d=>dateMap[d]);
+
+  renderLine('chart-evolution', dates, values);
+
+  const perfilMap = {};
+  data.forEach(d=>perfilMap[d.perfil]=(perfilMap[d.perfil]||0)+d.qtd);
+
+  renderBar('chart-perfil', Object.keys(perfilMap), Object.values(perfilMap));
 }
 
-function resetFilters() {
-  ['filter-hub','filter-ciclo','filter-transp','filter-perfil','filter-days']
-    .forEach(id=>document.getElementById(id).value="");
-  processAndUpdate();
+function renderLine(id, labels, values){
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'line',
+    data:{labels,datasets:[{data:values,borderColor:'#EE4D2D',fill:false}]},
+    options:{responsive:true,maintainAspectRatio:false}
+  });
 }
 
-function processAndUpdate() {
-  const fHub=document.getElementById('filter-hub').value;
-  const fCiclo=document.getElementById('filter-ciclo').value;
-  const fTransp=document.getElementById('filter-transp').value;
-  const fPerfil=document.getElementById('filter-perfil').value;
-  const days=parseInt(document.getElementById('filter-days').value)||7;
-
-  const from=new Date(); from.setDate(from.getDate()-days);
-
-  const filtered=rawData.filter(d=>
-    (!fHub||d.hub===fHub) &&
-    (!fCiclo||d.ciclo===fCiclo) &&
-    (!fTransp||d.transp===fTransp) &&
-    (!fPerfil||d.perfil===fPerfil) &&
-    d.data>=from
-  );
-
-  updateKPIs(filtered);
-  updateCharts(filtered);
-}
-
-function updateKPIs(data){
-  document.getElementById('kpi-total').innerText =
-    data.reduce((s,d)=>s+d.qtd,0);
-  document.getElementById('kpi-ciclo').innerText =
-    data[0]?.ciclo || '-';
-}
-
-function updateCharts(data){
-  // Mantido vazio para não quebrar
+function renderBar(id, labels, values){
+  if(charts[id]) charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels,datasets:[{data:values,backgroundColor:'#2563EB'}]},
+    options:{responsive:true,maintainAspectRatio:false}
+  });
 }
 
 init();
