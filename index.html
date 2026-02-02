@@ -80,11 +80,6 @@
                 <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest italic">Mix de Perfis de Veículos</h4>
                 <div class="h-[400px]"><canvas id="c-pie"></canvas></div>
             </div>
-
-            <div class="card p-6 lg:col-span-12">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest">Top 15 Hubs por Volume</h4>
-                <div class="h-[300px]"><canvas id="c-hub"></canvas></div>
-            </div>
         </div>
     </main>
 
@@ -101,13 +96,12 @@
                 const json = Papa.parse(text, {header:true, skipEmptyLines:true}).data;
 
                 database = json.map(row => {
-                    // Mapeamento dinâmico para evitar erros de colunas
                     const qKey = Object.keys(row).find(k => k.includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
                     const tKey = Object.keys(row).find(k => k.includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
                     const hKey = row['NOME HUB'] ? 'NOME HUB' : 'HUB';
                     const pKey = Object.keys(row).find(k => k.includes('PERFIL')) || 'PERFIL DO VEÍCULO';
                     
-                    // Se a DATA estiver com erro (#VALUE!), usamos a DATA IMPORT
+                    // Lógica para contornar o erro #VALUE!
                     let rawDate = (row['DATA'] && !row['DATA'].includes('#')) ? row['DATA'] : row['DATA IMPORT'];
                     if (!rawDate) return null;
 
@@ -121,7 +115,6 @@
                     };
                 }).filter(d => d && d.qtd > 0);
 
-                // Configura datas iniciais baseadas no que existe na planilha
                 const dates = database.map(d => d.dateObj).filter(d => d !== null);
                 const lastDate = new Date(Math.max(...dates));
                 const firstDate = new Date(lastDate);
@@ -130,7 +123,6 @@
                 document.getElementById('d-start').value = firstDate.toISOString().split('T')[0];
                 document.getElementById('d-end').value = lastDate.toISOString().split('T')[0];
 
-                // Filtros dinâmicos
                 const populate = (id, key) => {
                     const items = [...new Set(database.map(d => d[key]))].sort();
                     items.forEach(i => document.getElementById(id).innerHTML += `<option value="${i}">${i}</option>`);
@@ -140,7 +132,7 @@
 
                 render();
                 document.querySelectorAll('input, select').forEach(el => el.onchange = render);
-            } catch (err) { console.error("Falha no boot:", err); }
+            } catch (err) { console.error("Falha ao carregar dados:", err); }
         }
 
         function render() {
@@ -154,32 +146,28 @@
                 (!hV || d.hub === hV) && (!tV || d.transp === tV)
             );
 
-            // Atualiza KPIs
             const total = filtered.reduce((a, b) => a + b.qtd, 0);
             document.getElementById('k-total').innerText = total.toLocaleString('pt-BR');
             
             const trMap = group(filtered, 'transp');
             const pfMap = group(filtered, 'perfil');
-            const hbMap = group(filtered, 'hub');
             const dtMap = group(filtered, 'dateStr');
 
             document.getElementById('k-leader').innerText = Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-perfil').innerText = Object.entries(pfMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-date').innerText = document.getElementById('d-end').value.split('-').reverse().join('/');
 
-            // Renderiza os Gráficos
             draw('c-line', 'line', dtMap, { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)', tension: 0.4 });
             draw('c-bar', 'bar', trMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true);
-            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981','#94A3B8'] });
-            draw('c-hub', 'bar', hbMap, { backgroundColor: '#001529' }, true, 15);
+            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981'] });
         }
 
-        function draw(id, type, dataMap, extra, sort = false, limit = 10) {
+        function draw(id, type, dataMap, extra, sort = false) {
             if(myCharts[id]) myCharts[id].destroy();
             let entries = Object.entries(dataMap);
             if(sort) entries.sort((a,b) => b[1]-a[1]);
             if(id === 'c-line') entries.sort((a,b) => parseDate(a[0]) - parseDate(b[0]));
-            entries = entries.slice(0, limit);
+            entries = entries.slice(0, 10);
 
             myCharts[id] = new Chart(document.getElementById(id), {
                 type: type,
@@ -187,16 +175,16 @@
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: type === 'doughnut', position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } },
+                        legend: { display: type === 'doughnut', position: 'bottom' },
                         datalabels: {
-                            color: '#000', font: { weight: 'bold', size: 10 }, anchor: 'end', 
-                            align: extra.indexAxis === 'y' ? 'right' : 'top',
-                            formatter: (v) => v.toLocaleString('pt-BR')
+                            color: '#000', font: { weight: 'bold', size: 10 },
+                            formatter: (v) => v.toLocaleString('pt-BR'),
+                            anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top'
                         }
                     },
                     scales: type === 'doughnut' ? {} : { 
                         y: { display: false }, 
-                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 } } } 
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } } 
                     }
                 }
             });
