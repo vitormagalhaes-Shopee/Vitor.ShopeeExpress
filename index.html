@@ -3,311 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics Ops | Intelligence Dashboard</title>
+    <title>Shopee Express | Logistics Intelligence Ops</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { background-color: #F3F4F6; font-family: 'Inter', sans-serif; color: #1E293B; }
-        .brand-blue { color: #0284C7; }
-        .bg-brand { background-color: #0284C7; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { background-color: #F8F9FA; font-family: 'Inter', sans-serif; color: #2D2D2D; }
+        .shopee-orange { color: #EE4D2D; }
+        .bg-shopee { background-color: #EE4D2D; }
+        .card-header { border-bottom: 1px solid #F0F0F0; padding-bottom: 12px; margin-bottom: 16px; }
         .dashboard-card { 
             background: white; 
             border-radius: 12px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #E5E7EB;
         }
-        .loader { border-top-color: #0284C7; animation: spin 1s linear infinite; }
+        .dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); }
+        .loader { border-top-color: #EE4D2D; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        select { border: 1px solid #E2E8F0; border-radius: 8px; padding: 4px 8px; font-size: 0.75rem; font-weight: 600; outline: none; }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
     </style>
 </head>
 <body>
-
-    <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-50">
-        <div class="loader rounded-full border-4 border-slate-200 h-12 w-12 mb-4"></div>
-        <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Carregando Operações...</p>
+    <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-500">
+        <div class="loader rounded-full border-8 border-gray-100 h-20 w-20 mb-4"></div>
+        <h2 class="text-xl font-black text-gray-800 tracking-tighter italic uppercase">SHOPEE <span class="shopee-orange">EXPRESS</span></h2>
+        <p class="text-xs font-bold text-gray-400 tracking-widest uppercase mt-2">Logistics Intelligence</p>
     </div>
 
-    <header class="bg-white border-b border-slate-200 p-4 sticky top-0 z-40">
-        <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+    <header class="bg-white border-b border-gray-200 p-4 sticky top-0 z-40">
+        <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-brand rounded-lg flex items-center justify-center text-white shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <div class="w-10 h-10 bg-shopee rounded-lg flex items-center justify-center text-white shadow-lg shadow-orange-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                 </div>
                 <div>
-                    <h1 class="font-extrabold text-lg tracking-tight leading-none uppercase">Logistics <span class="brand-blue">Intelligence</span></h1>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Control Tower v2.0</span>
+                    <h1 class="font-black text-xl uppercase italic tracking-tighter leading-none">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
+                    <span class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Operations Control Center</span>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-2">
-                <select id="filter-date-range">
+            <div class="flex flex-wrap items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-200">
+                <select id="filter-hub" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
+                    <option value="">TODOS OS HUBS</option>
+                </select>
+                <select id="filter-ciclo" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
+                    <option value="">TODOS OS CICLOS</option>
+                </select>
+                <select id="filter-transp" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
+                    <option value="">TODAS AS TRANSPORTADORAS</option>
+                </select>
+                <select id="filter-perfil" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
+                    <option value="">TODOS OS PERFIS</option>
+                </select>
+                <select id="filter-days" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer">
                     <option value="7">Últimos 7 dias</option>
-                    <option value="15">Últimos 15 dias</option>
+                    <option value="14">Últimos 14 dias</option>
                     <option value="30">Últimos 30 dias</option>
                 </select>
-                <select id="filter-hub"><option value="">Todos os Hubs</option></select>
-                <select id="filter-transp"><option value="">Todas Transportadoras</option></select>
-                <select id="filter-perfil"><option value="">Todos Perfis</option></select>
-                <button onclick="resetFilters()" class="text-xs font-bold text-slate-400 hover:text-red-500 px-2 transition-colors">LIMPAR</button>
+                <button onclick="resetFilters()" class="text-xs font-bold text-gray-500 hover:text-orange-600 px-2 uppercase">Limpar</button>
             </div>
+
+            <div id="status" class="hidden md:block text-[10px] font-black text-white bg-green-500 px-3 py-1.5 rounded-md">LIVE</div>
         </div>
     </header>
 
-    <main class="max-w-[1600px] mx-auto p-4 lg:p-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="dashboard-card p-5 border-t-4 border-blue-600">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Frota Total</p>
-                        <h3 id="kpi-total" class="text-3xl font-black text-slate-800 tracking-tight">0</h3>
-                    </div>
-                    <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                    </div>
+    <main class="max-w-[1400px] mx-auto p-4 md:p-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-8">
+            <div class="dashboard-card p-6 border-l-4 border-[#EE4D2D]">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Frota Consolidada</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 id="kpi-total" class="text-3xl font-black text-gray-800 tracking-tight">0</h3>
+                    <span class="text-xs font-bold text-gray-400 uppercase">veículos</span>
                 </div>
             </div>
-
-            <div class="dashboard-card p-5 border-t-4 border-blue-400">
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Top Partner</p>
-                <h3 id="kpi-top-transp" class="text-xl font-bold text-slate-700 truncate">-</h3>
-                <p id="kpi-top-transp-val" class="text-xs text-blue-500 font-bold">0 veículos</p>
+            <div class="dashboard-card p-6 border-l-4 border-orange-200">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ciclo Predominante</p>
+                <h3 id="kpi-ciclo" class="text-3xl font-black text-gray-800 tracking-tight italic">-</h3>
             </div>
-
-            <div class="dashboard-card p-5 border-t-4 border-blue-300">
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Mix Dominante (Modal)</p>
-                <h3 id="kpi-top-perfil" class="text-xl font-bold text-slate-700">-</h3>
-                <p id="kpi-top-perfil-val" class="text-xs text-blue-500 font-bold">0% do total</p>
-            </div>
-
-            <div class="dashboard-card p-5 border-t-4 border-slate-300">
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Sincronização</p>
-                <h3 id="sync-time" class="text-xl font-bold text-slate-700 uppercase">--:--</h3>
-                <div class="flex items-center gap-1 mt-1">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span class="text-[10px] font-bold text-green-600 uppercase">Dados em Tempo Real</span>
-                </div>
+            <div class="dashboard-card p-6 border-l-4 border-gray-200">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Última Sincronização</p>
+                <h3 id="sync-time" class="text-3xl font-black text-gray-400 tracking-tight italic uppercase">--:--</h3>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="dashboard-card p-6 lg:col-span-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h4 class="font-bold text-slate-700 uppercase text-xs tracking-widest">Evolução Temporal da Frota</h4>
-                    <div id="evolution-total" class="text-right">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Total no Período</span>
-                        <p class="text-lg font-black text-blue-600 leading-none">0</p>
-                    </div>
+            <div class="dashboard-card p-6 lg:col-span-12">
+                <div class="card-header flex justify-between items-center">
+                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Evolução Diária da Frota</h4>
+                    <span class="bg-orange-100 text-[#EE4D2D] text-[10px] font-bold px-2 py-1 rounded">LINE CHART</span>
+                </div>
+                <div class="flex justify-end mb-2">
+                    <div id="total-evolution-badge" class="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded">Total: 0</div>
                 </div>
                 <div class="h-64"><canvas id="chart-evolution"></canvas></div>
             </div>
 
-            <div class="dashboard-card p-6 lg:col-span-4">
-                <h4 class="font-bold text-slate-700 uppercase text-xs tracking-widest mb-6">Mix por Perfil de Veículo</h4>
-                <div class="h-64"><canvas id="chart-perfil"></canvas></div>
+            <div class="dashboard-card p-6 lg:col-span-7">
+                <div class="card-header flex justify-between items-center">
+                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Volume por Perfil de Veículo</h4>
+                    <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">BAR HORIZONTAL</span>
+                </div>
+                <div class="h-80"><canvas id="chart-perfil"></canvas></div>
             </div>
 
-            <div class="dashboard-card p-6 lg:col-span-4">
-                <h4 class="font-bold text-slate-700 uppercase text-xs tracking-widest mb-6">Market Share Parceiros</h4>
-                <div class="h-64"><canvas id="chart-transp-share"></canvas></div>
+            <div class="dashboard-card p-6 lg:col-span-5">
+                <div class="card-header flex justify-between items-center">
+                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Market Share Parceiros</h4>
+                    <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">DOUGHNUT</span>
+                </div>
+                <div class="h-80"><canvas id="chart-transp"></canvas></div>
             </div>
 
-            <div class="dashboard-card p-6 lg:col-span-4">
-                <h4 class="font-bold text-slate-700 uppercase text-xs tracking-widest mb-6">Performance por Hub</h4>
-                <div class="h-64"><canvas id="chart-hubs"></canvas></div>
+            <div class="dashboard-card p-6 lg:col-span-6">
+                <div class="card-header flex justify-between items-center">
+                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Volume por Hub</h4>
+                    <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">BAR CHART</span>
+                </div>
+                <div class="h-72"><canvas id="chart-hubs"></canvas></div>
             </div>
 
-            <div class="dashboard-card p-6 lg:col-span-4">
-                <h4 class="font-bold text-slate-700 uppercase text-xs tracking-widest mb-6">Distribuição AM vs DD</h4>
-                <div class="h-64"><canvas id="chart-ciclo-comp"></canvas></div>
+            <div class="dashboard-card p-6 lg:col-span-6">
+                <div class="card-header flex justify-between items-center">
+                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Distribuição de Ciclo por Hub</h4>
+                    <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">STACKED BAR</span>
+                </div>
+                <div class="h-72"><canvas id="chart-ciclo-hub"></canvas></div>
             </div>
+
+            <div class="dashboard-card p-6 lg:col-span-6">
+                <div class="card-header flex justify-between items-center">
+                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Top 10 Transportadoras</h4>
+                    <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">BAR HORIZONTAL</span>
+                </div>
+                <div class="h-72"><canvas id="chart-top-transp"></canvas></div>
+            </div>
+
+            <div class="dashboard-card p-6 lg:col-span-6">
+                <div class="card-header flex justify-between items-center">
+                    <h4 class="font-black text-gray-700 uppercase tracking-tight text-sm italic">Veículos por Modal</h4>
+                    <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">DOUGHNUT</span>
+                </div>
+                <div class="h-72"><canvas id="chart-modal"></canvas></div>
+            </div>
+
         </div>
     </main>
 
     <script>
         const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
-        
         let rawData = [];
         let charts = {};
-        const BLUE_PALETTE = ['#0369a1', '#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe'];
-        const SLATE_PALETTE = ['#475569', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0'];
+        const validPerfis = ['VUC','PASSEIO','MOTO','VAN','FIORINO','VAN/KOMBI','UTILITÁRIO'];
+        const colors = {
+            orange: '#EE4D2D',
+            dark: '#2D2D2D',
+            blue: ['#1E3A8A','#3B82F6','#60A5FA','#93C5FD','#BFDBFE','#DBEAFE'],
+            gray: ['#F3F4F6','#E5E7EB','#D1D5DB','#9CA3AF','#6B7280'],
+            palette: ['#1E3A8A','#3B82F6','#60A5FA','#93C5FD','#EE4D2D','#A6A6A6','#C0C0C0','#D1D1D1']
+        };
 
-        const PERFIS_ORDEM = ["VUC", "PASSEIO", "MOTO", "VAN", "FIORINO", "VAN/KOMBI", "UTILITÁRIO"];
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#828282';
+        Chart.defaults.plugins.tooltip.padding = 12;
+        Chart.defaults.plugins.tooltip.backgroundColor = '#2D2D2D';
+        Chart.defaults.plugins.tooltip.cornerRadius = 8;
 
         async function init() {
             try {
                 const response = await fetch(`${SHEET_CSV}&cache=${Date.now()}`);
-                const csv = await response.text();
-                const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true }).data;
-                
-                // Limpeza Rigorosa
-                rawData = parsed.filter(r => {
-                    const t = String(r['TRANSPORTADORA'] || '').toUpperCase();
-                    const p = String(r['PERFIL DO VEÍCULO'] || '').toUpperCase();
-                    return t && t !== 'N/D' && !t.includes('#REF') && 
-                           p && p !== 'N/D' && !p.includes('#REF') && p !== 'PERFIL DO VEÍCULO';
-                }).map(r => ({
-                    data: r['DATA'] || '',
-                    ciclo: String(r['CICLO (AM / DD)'] || '').toUpperCase(),
-                    hub: String(r['HUB'] || '').toUpperCase(),
-                    transp: String(r['TRANSPORTADORA'] || '').trim().toUpperCase(),
-                    perfil: String(r['PERFIL DO VEÍCULO'] || '').trim().toUpperCase(),
-                    qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS'] || 0).replace(/\D/g, '')) || 0
-                }));
+                const csvData = await response.text();
+                const parsed = Papa.parse(csvData, { header: true, skipEmptyLines: true }).data;
+
+                rawData = parsed.map(r => {
+                    let perfil = String(r['PERFIL DO VEÍCULO'] || '').trim().toUpperCase().replace('UTILITARIO','UTILITÁRIO');
+                    if(!validPerfis.includes(perfil)) perfil = null;
+
+                    let transp = String(r['TRANSPORTADORA'] || '').trim();
+                    if(transp === '' || transp.toUpperCase() === 'ND' || transp.includes('#REF')) transp = null;
+
+                    let hub = String(r['HUB'] || '').trim();
+                    if(hub === '' || hub.toUpperCase() === 'ND' || hub.includes('#REF')) hub = null;
+
+                    let ciclo = String(r['CICLO (AM / DD)'] || '').trim();
+                    if(ciclo === '' || ciclo.toUpperCase() === 'ND' || ciclo.includes('#REF')) ciclo = null;
+
+                    let qtd = parseInt(String(r['QUANTIDADE DE VEÍCULOS'] || 0).replace(/\D/g, '')) || 0;
+
+                    return { data: r['DATA']||'N/D', ciclo, hub, transp, perfil, qtd };
+                }).filter(d => d.qtd>0);
 
                 populateFilters();
-                update();
+                attachFilterEvents();
+                processAndUpdate();
 
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('sync-time').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            } catch (e) { console.error(e); }
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading').style.display='none',500);
+
+                document.getElementById('sync-time').innerText = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+            } catch(err) {
+                console.error(err);
+                const status = document.getElementById('status');
+                status.innerText = 'ERRO';
+                status.classList.replace('bg-green-500','bg-red-500');
+            }
         }
 
         function populateFilters() {
+            const getUnique = key => [...new Set(rawData.map(item => item[key]).filter(x=>x))].sort();
             const fill = (id, items) => {
                 const el = document.getElementById(id);
-                el.innerHTML = `<option value="">${el.options[0].text}</option>`;
-                [...new Set(items)].sort().forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item; opt.innerText = item;
-                    el.appendChild(opt);
-                });
+                el.innerHTML = el.options[0].outerHTML;
+                items.forEach(item => { const opt=document.createElement('option'); opt.value=item; opt.innerText=item; el.appendChild(opt); });
             };
-            fill('filter-hub', rawData.map(d => d.hub));
-            fill('filter-transp', rawData.map(d => d.transp));
-            fill('filter-perfil', rawData.map(d => d.perfil));
+            fill('filter-hub', getUnique('hub'));
+            fill('filter-ciclo', getUnique('ciclo'));
+            fill('filter-transp', getUnique('transp'));
+            fill('filter-perfil', getUnique('perfil'));
+        }
 
-            ['filter-hub', 'filter-transp', 'filter-perfil', 'filter-date-range'].forEach(id => {
-                document.getElementById(id).addEventListener('change', update);
+        function attachFilterEvents() {
+            ['filter-hub','filter-ciclo','filter-transp','filter-perfil','filter-days'].forEach(id => {
+                document.getElementById(id).addEventListener('change', processAndUpdate);
             });
         }
 
         function resetFilters() {
-            ['filter-hub', 'filter-transp', 'filter-perfil'].forEach(id => document.getElementById(id).value = "");
-            document.getElementById('filter-date-range').value = "7";
-            update();
+            ['filter-hub','filter-ciclo','filter-transp','filter-perfil','filter-days'].forEach(id => document.getElementById(id).value="");
+            processAndUpdate();
         }
 
-        function update() {
+        function processAndUpdate() {
             const fHub = document.getElementById('filter-hub').value;
+            const fCiclo = document.getElementById('filter-ciclo').value;
             const fTransp = document.getElementById('filter-transp').value;
             const fPerfil = document.getElementById('filter-perfil').value;
-            const fDays = parseInt(document.getElementById('filter-date-range').value);
+            const days = parseInt(document.getElementById('filter-days').value) || 7;
 
-            let filtered = rawData.filter(d => 
-                (fHub === "" || d.hub === fHub) &&
-                (fTransp === "" || d.transp === fTransp) &&
-                (fPerfil === "" || d.perfil === fPerfil)
-            );
-
-            // Filtro de Data (Últimos X dias baseado na data máxima dos dados)
-            const uniqueDates = [...new Set(rawData.map(d => d.data))].sort((a,b) => {
-                return new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-'));
-            });
-            const lastDates = uniqueDates.slice(-fDays);
-            const dateFiltered = filtered.filter(d => lastDates.includes(d.data));
-
-            renderKPIs(filtered, dateFiltered);
-            renderCharts(dateFiltered, lastDates);
-        }
-
-        function renderKPIs(allData, periodData) {
-            const total = periodData.reduce((acc, curr) => acc + curr.qtd, 0);
-            document.getElementById('kpi-total').innerText = total.toLocaleString('pt-BR');
-            document.getElementById('evolution-total').querySelector('p').innerText = total.toLocaleString('pt-BR');
-
-            // Top Transp
-            const transps = periodData.reduce((acc, d) => { acc[d.transp] = (acc[d.transp] || 0) + d.qtd; return acc; }, {});
-            const topT = Object.entries(transps).sort((a,b) => b[1] - a[1])[0] || ["-", 0];
-            document.getElementById('kpi-top-transp').innerText = topT[0];
-            document.getElementById('kpi-top-transp-val').innerText = `${topT[1]} veículos`;
-
-            // Top Perfil
-            const perfis = periodData.reduce((acc, d) => { acc[d.perfil] = (acc[d.perfil] || 0) + d.qtd; return acc; }, {});
-            const topP = Object.entries(perfis).sort((a,b) => b[1] - a[1])[0] || ["-", 0];
-            const pctP = total > 0 ? ((topP[1] / total) * 100).toFixed(1) : 0;
-            document.getElementById('kpi-top-perfil').innerText = topP[0];
-            document.getElementById('kpi-top-perfil-val').innerText = `${pctP}% do mix total`;
-        }
-
-        function renderCharts(data, lastDates) {
-            // 1. Evolução (Line)
-            const evData = lastDates.map(date => data.filter(d => d.data === date).reduce((acc, curr) => acc + curr.qtd, 0));
-            createChart('chart-evolution', 'line', lastDates, evData, { 
-                fill: true, 
-                borderColor: '#0284C7', 
-                backgroundColor: 'rgba(2, 132, 199, 0.05)',
-                tension: 0.3
-            });
-
-            // 2. Perfil (Bar Horizontal) - Ordem Específica
-            const perfilMap = data.reduce((acc, d) => { acc[d.perfil] = (acc[d.perfil] || 0) + d.qtd; return acc; }, {});
-            const perfilLabels = PERFIS_ORDEM.filter(p => perfilMap[p]);
-            const perfilValues = perfilLabels.map(p => perfilMap[p]);
-            createChart('chart-perfil', 'bar', perfilLabels, perfilValues, {
-                indexAxis: 'y',
-                backgroundColor: BLUE_PALETTE
-            });
-
-            // 3. Market Share (Bar Horizontal - Melhor que Doughnut para executivos)
-            const transpMap = data.reduce((acc, d) => { acc[d.transp] = (acc[d.transp] || 0) + d.qtd; return acc; }, {});
-            const topTransps = Object.entries(transpMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            createChart('chart-transp-share', 'bar', topTransps.map(x => x[0]), topTransps.map(x => x[1]), {
-                indexAxis: 'y',
-                backgroundColor: '#0369a1'
-            });
-
-            // 4. Hubs (Bar Vertical)
-            const hubMap = data.reduce((acc, d) => { acc[d.hub] = (acc[d.hub] || 0) + d.qtd; return acc; }, {});
-            const topHubs = Object.entries(hubMap).sort((a,b) => b[1] - a[1]).slice(0, 8);
-            createChart('chart-hubs', 'bar', topHubs.map(x => x[0]), topHubs.map(x => x[1]), {
-                backgroundColor: '#38bdf8'
-            });
-
-            // 5. Ciclo AM vs DD
-            const amVal = data.filter(d => d.ciclo.includes('AM')).reduce((a,b) => a + b.qtd, 0);
-            const ddVal = data.filter(d => d.ciclo.includes('DD')).reduce((a,b) => a + b.qtd, 0);
-            createChart('chart-ciclo-comp', 'doughnut', ['Ciclo AM', 'Ciclo DD'], [amVal, ddVal], {
-                backgroundColor: ['#0369a1', '#cbd5e1'],
-                cutout: '70%'
-            });
-        }
-
-        function createChart(id, type, labels, values, extra) {
-            if (charts[id]) charts[id].destroy();
-            const ctx = document.getElementById(id).getContext('2d');
-            
-            const config = {
-                type: type,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        borderWidth: 0,
-                        borderRadius: 4,
-                        ...extra
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: type === 'doughnut' },
-                        tooltip: { backgroundColor: '#1e293b', padding: 12 }
-                    },
-                    scales: type === 'doughnut' ? {} : {
-                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
-                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }
-                    }
-                }
-            };
-            charts[id] = new Chart(ctx, config);
-        }
-
-        init();
-        setInterval(init, 600000); // 10 min
-    </script>
-</body>
-</html>
+            const today = new Date();
+           
