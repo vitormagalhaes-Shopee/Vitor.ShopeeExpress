@@ -3,102 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHOPEE EXPRESS | Logistics Tower V19</title>
+    <title>SHOPEE EXPRESS | Logistics Tower V21</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #F1F5F9; font-family: 'Inter', sans-serif; }
-        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        body { background-color: #F1F5F9; font-family: 'Inter', sans-serif; color: #000; }
+        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; position: relative; }
         .shopee-bg { background-color: #EE4D2D; }
-        
-        /* FILTROS ULTRA VISÍVEIS */
-        .filter-box { background-color: #FFFFFF !important; color: #000000 !important; border: 2px solid #94A3B8 !important; opacity: 1 !important; }
-        label { color: #000000 !important; font-weight: 900 !important; font-size: 11px; margin-bottom: 2px; display: block; }
+        label { color: #000 !important; font-weight: 900 !important; font-size: 11px; margin-bottom: 3px; display: block; text-transform: uppercase; }
+        .filter-field { background-color: #FFF !important; color: #000 !important; border: 2px solid #334155 !important; border-radius: 6px; padding: 5px 10px; font-weight: bold; font-size: 12px; width: 100%; }
+        .empty-state { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #94A3B8; text-transform: uppercase; font-size: 12px; text-align: center; width: 100%; }
     </style>
 </head>
-<body class="text-slate-900">
+<body class="p-0 m-0">
 
-    <header class="bg-[#001529] text-white p-5 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
-        <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="shopee-bg p-2 rounded-lg text-xl">🚚</div>
+    <header class="bg-[#001529] text-white p-6 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
+        <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4">
+                <div class="shopee-bg p-2 rounded-lg text-2xl">🚀</div>
                 <div>
-                    <h1 class="font-black text-xl italic uppercase tracking-tighter text-white">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
-                    <p class="text-[9px] font-bold text-slate-400 tracking-[0.2em]">LOGISTICS INTELLIGENCE TOWER</p>
+                    <h1 class="font-black text-2xl italic uppercase text-white leading-none">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
+                    <p class="text-[10px] font-bold text-slate-400 tracking-[0.3em]">LOGISTICS INTELLIGENCE TOWER</p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-4 bg-slate-800 p-4 rounded-xl">
-                <div><label>INÍCIO</label><input type="date" id="d-start" class="filter-box px-2 py-1 rounded"></div>
-                <div><label>FIM</label><input type="date" id="d-end" class="filter-box px-2 py-1 rounded"></div>
-                <div><label>HUB</label><select id="f-hub" class="filter-box px-2 py-1 rounded min-w-[150px]"><option value="">TODOS</option></select></div>
-                <div><label>3PL</label><select id="f-transp" class="filter-box px-2 py-1 rounded min-w-[150px]"><option value="">TODAS</option></select></div>
-                <button onclick="location.reload()" class="shopee-bg text-white px-6 py-2 mt-4 rounded-lg font-black text-[11px] uppercase shadow-lg">RESET</button>
+            <div class="flex flex-wrap items-end gap-4 bg-slate-900/50 p-4 rounded-xl border border-white/10">
+                <div class="w-36"><label>Início</label><input type="date" id="d-start" class="filter-field"></div>
+                <div class="w-36"><label>Fim</label><input type="date" id="d-end" class="filter-field"></div>
+                <div class="w-48"><label>Hub</label><select id="f-hub" class="filter-field"><option value="">TODOS</option></select></div>
+                <div class="w-48"><label>3PL</label><select id="f-transp" class="filter-field"><option value="">TODAS</option></select></div>
+                <button onclick="location.reload()" class="shopee-bg text-white px-8 py-2 rounded-lg font-black text-xs uppercase hover:scale-105 transition-all shadow-lg">LIMPAR</button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-[1600px] mx-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 text-center">
-            <div class="dashboard-card p-5 border-l-8 border-blue-900"><p class="text-[10px] font-black text-slate-500 uppercase">Frota Total</p><span id="k-total" class="text-3xl font-black text-blue-900">0</span></div>
-            <div class="dashboard-card p-5 border-l-8 border-[#EE4D2D]"><p class="text-[10px] font-black text-slate-500 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black block truncate">--</span></div>
-            <div class="dashboard-card p-5 border-l-8 border-sky-400"><p class="text-[10px] font-black text-slate-500 uppercase">Perfil Top</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
-            <div class="dashboard-card p-5 border-l-8 border-slate-400"><p class="text-[10px] font-black text-slate-500 uppercase">Última Data</p><span id="k-date" class="text-lg font-black block">--</span></div>
+    <main class="max-w-[1600px] mx-auto p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="dashboard-card border-l-8 border-blue-900 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Frota Total</p><span id="k-total" class="text-3xl font-black text-blue-900">0</span></div>
+            <div class="dashboard-card border-l-8 border-[#EE4D2D] text-center"><p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black truncate block">--</span></div>
+            <div class="dashboard-card border-l-8 border-sky-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Mix Predominante</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
+            <div class="dashboard-card border-l-8 border-slate-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Data Ref.</p><span id="k-date" class="text-lg font-black block">--</span></div>
+        </div>
+
+        <div class="dashboard-card min-h-[300px]" id="cont-line">
+            <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">📈 Evolução Operacional (Volume Diário)</h4>
+            <div class="h-[250px]"><canvas id="c-line"></canvas></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="dashboard-card p-6 lg:col-span-12">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">Evolução de Volume Diário</h4>
-                <div class="h-[250px]"><canvas id="c-line"></canvas></div>
-            </div>
-            <div class="dashboard-card p-6 lg:col-span-7">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic text-[#EE4D2D]">Volume por Transportadora (Top 10)</h4>
+            <div class="dashboard-card lg:col-span-7 min-h-[450px]" id="cont-bar">
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic text-[#EE4D2D]">🏆 Top 10 Transportadoras por Volume</h4>
                 <div class="h-[400px]"><canvas id="c-bar"></canvas></div>
             </div>
-            <div class="dashboard-card p-6 lg:col-span-5">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic text-blue-900">Mix de Perfis</h4>
+            <div class="dashboard-card lg:col-span-5 min-h-[450px]" id="cont-pie">
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic text-blue-900">📊 Mix de Perfis de Veículos</h4>
                 <div class="h-[400px]"><canvas id="c-pie"></canvas></div>
             </div>
+        </div>
+
+        <div class="dashboard-card min-h-[350px]" id="cont-hub">
+            <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">🏢 Performance de Volume por Hub</h4>
+            <div class="h-[300px]"><canvas id="c-hub"></canvas></div>
         </div>
     </main>
 
     <script>
-        const CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
         Chart.register(ChartDataLabels);
         let database = [];
         let myCharts = {};
 
+        function parseDate(s) {
+            if (!s || typeof s !== 'string') return null;
+            s = s.trim();
+            if (s.includes('/')) {
+                const p = s.split('/');
+                if (p.length !== 3) return null;
+                const d = new Date(p[2], p[1] - 1, p[0]);
+                return isNaN(d) ? null : d;
+            }
+            if (s.includes('-')) {
+                const d = new Date(s);
+                return isNaN(d) ? null : d;
+            }
+            return null;
+        }
+
         async function init() {
-            const r = await fetch(`${CSV}&t=${Date.now()}`);
+            const r = await fetch(`${CSV_URL}&t=${Date.now()}`);
             const t = await r.text();
             const raw = Papa.parse(t, {header:true, skipEmptyLines:true}).data;
 
             database = raw.map(row => {
-                // MAPEAMENTO DINÂMICO PARA NÃO DAR ERRO DE COLUNA
-                const colTransp = Object.keys(row).find(k => k.includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
-                const colQtd = Object.keys(row).find(k => k.includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
-                const colPerfil = Object.keys(row).find(k => k.includes('PERFIL')) || 'PERFIL DO VEÍCULO';
+                const colTransp = Object.keys(row).find(k => k.trim().toUpperCase().includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
+                const colQtd = Object.keys(row).find(k => k.trim().toUpperCase().includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
+                const colPerfil = Object.keys(row).find(k => k.trim().toUpperCase().includes('PERFIL')) || 'PERFIL DO VEÍCULO';
+                const colHub = Object.keys(row).find(k => k.trim().toUpperCase().includes('NOME HUB')) || 'NOME HUB';
 
-                if(!row['DATA'] || row['DATA'] === 'Sem data') return null;
+                const dObj = parseDate(row['DATA']);
+                if(!dObj) return null;
 
                 return {
                     dateStr: row['DATA'],
-                    dateObj: parseDate(row['DATA']),
-                    hub: (row['NOME HUB'] || row['HUB'] || 'N/D').trim(),
+                    dateObj: dObj,
+                    hub: (row[colHub] || 'N/D').trim(),
                     transp: (row[colTransp] || 'N/D').trim(),
                     perfil: (row[colPerfil] || 'N/D').toUpperCase().trim(),
                     qtd: parseInt(String(row[colQtd] || '0').replace(/\D/g,'')) || 0
                 };
-            }).filter(d => d && d.qtd > 0 && d.transp !== 'Sem data' && d.transp !== 'N/D');
+            }).filter(d => d && d.qtd > 0);
 
-            const dates = database.map(d => d.dateObj).filter(d => d);
+            const dates = database.map(d => d.dateObj);
             const maxD = new Date(Math.max(...dates));
             const minD = new Date(maxD);
             minD.setDate(maxD.getDate() - 7);
-
+            
             document.getElementById('d-start').value = minD.toISOString().split('T')[0];
             document.getElementById('d-end').value = maxD.toISOString().split('T')[0];
 
@@ -119,23 +141,37 @@
             const hV = document.getElementById('f-hub').value;
             const tV = document.getElementById('f-transp').value;
 
-            const filtered = database.filter(d => 
-                d.dateObj >= sV && d.dateObj <= eV &&
+            const f = database.filter(d => 
+                d.dateObj && d.dateObj >= sV && d.dateObj <= eV &&
                 (!hV || d.hub === hV) && (!tV || d.transp === tV)
             );
 
-            document.getElementById('k-total').innerText = filtered.reduce((a, b) => a + b.qtd, 0).toLocaleString('pt-BR');
-            const trMap = group(filtered, 'transp');
-            const pfMap = group(filtered, 'perfil');
-            const dtMap = group(filtered, 'dateStr');
+            // Reseta Containers de Mensagem
+            document.querySelectorAll('.empty-state').forEach(e => e.remove());
 
+            if (f.length === 0) {
+                ['c-line', 'c-bar', 'c-pie', 'c-hub'].forEach(id => {
+                    const canvas = document.getElementById(id);
+                    if(myCharts[id]) myCharts[id].destroy();
+                    canvas.parentElement.insertAdjacentHTML('afterbegin', '<div class="empty-state">Sem dados para este filtro</div>');
+                });
+                return;
+            }
+
+            const trMap = group(f, 'transp');
+            const pfMap = group(f, 'perfil');
+            const hbMap = group(f, 'hub');
+            const dtMap = group(f, 'dateStr');
+
+            document.getElementById('k-total').innerText = f.reduce((a, b) => a + b.qtd, 0).toLocaleString('pt-BR');
             document.getElementById('k-leader').innerText = Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-perfil').innerText = Object.entries(pfMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-date').innerText = document.getElementById('d-end').value.split('-').reverse().join('/');
 
-            draw('c-line', 'line', dtMap, { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)' });
+            draw('c-line', 'line', dtMap, { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)', tension: 0.4 });
             draw('c-bar', 'bar', trMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true, 10);
-            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981','#8B5CF6'] });
+            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#94A3B8','#F59E0B','#10B981','#8B5CF6','#D946EF'] });
+            draw('c-hub', 'bar', hbMap, { backgroundColor: '#001529' }, true, 15);
         }
 
         function draw(id, type, dataMap, extra, sort = false, limit = 0) {
@@ -147,31 +183,23 @@
 
             myCharts[id] = new Chart(document.getElementById(id), {
                 type: type,
-                data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra }] },
+                data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 5 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 35, right: 35, left: 10, bottom: 10 } },
                     plugins: {
-                        legend: { 
-                            display: type === 'doughnut', 
-                            position: 'bottom',
-                            labels: { color: '#000', font: { weight: 'bold', size: 10 } }
-                        },
-                        datalabels: {
-                            color: '#000', font: { weight: 'bold', size: 10 },
-                            anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
-                            formatter: (v) => v.toLocaleString('pt-BR')
-                        }
+                        legend: { display: type === 'doughnut', position: 'right', labels: { color: '#000', font: { weight: 'bold', size: 10 } } },
+                        datalabels: { color: '#000', font: { weight: 'bold', size: 10 }, anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top', formatter: v => v.toLocaleString('pt-BR') }
                     },
                     scales: type === 'doughnut' ? {} : {
-                        y: { display: false, grace: '15%' },
-                        x: { grid: { display: false }, ticks: { color: '#000', font: { weight: 'bold' } } }
+                        y: { display: false, grace: '20%' },
+                        x: { grid: { display: false }, ticks: { color: '#000', font: { weight: 'bold', size: 10 } } }
                     }
                 }
             });
         }
 
         function group(arr, key) { return arr.reduce((acc, c) => { acc[c[key]] = (acc[c[key]] || 0) + c.qtd; return acc; }, {}); }
-        function parseDate(s) { const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); }
         init();
     </script>
 </body>
