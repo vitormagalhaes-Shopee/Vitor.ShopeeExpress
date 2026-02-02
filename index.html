@@ -3,290 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics Intel | Final Debug V7</title>
+    <title>Shopee Express | Logistics Tower</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #F8FAFC; font-family: 'Inter', sans-serif; color: #1E293B; }
-        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #CBD5E1; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .kpi-value { font-size: 2.8rem; font-weight: 900; color: #003366; letter-spacing: -1px; }
-
-        .filter-box select {
-            background-color: #f1f5f9 !important;
-            color: #0f172a !important;
-            border: 2px solid #64748b !important;
-            font-weight: 800 !important;
-            padding: 8px 12px !important;
-            border-radius: 6px !important;
-        }
+        body { background-color: #F4F7FA; font-family: 'Inter', sans-serif; }
+        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .shopee-orange { color: #EE4D2D; }
+        .bg-shopee-dark { background-color: #001529; }
+        select { background: white !important; color: #000 !important; border: 2px solid #ddd !important; font-weight: bold !important; }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased text-slate-900">
 
-<header class="bg-[#001529] text-white p-6 sticky top-0 z-50 border-b-4 border-orange-600">
-    <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-6">
-        <div class="flex items-center gap-4">
-            <div class="bg-orange-600 p-3 rounded-xl shadow-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                          d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+    <header class="bg-shopee-dark text-white p-6 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
+        <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-[#EE4D2D] p-2 rounded-lg shadow-lg">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M12 2L4 5v11c0 5.25 4.75 10 8 11 3.25-1 8-5.75 8-11V5l-8-3zm-2 14.5l-3.5-3.5 1.42-1.42L10 13.67l5.08-5.09 1.42 1.41L10 16.5z"/></svg>
+                </div>
+                <div>
+                    <h1 class="font-black text-2xl tracking-tight uppercase leading-none italic">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold tracking-[.3em] mt-1">LOGISTICS INTELLIGENCE TOWER</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-black text-2xl tracking-tighter uppercase leading-none text-white">
-                    COMMAND <span class="text-orange-500">CENTER</span>
-                </h1>
-                <p class="text-[10px] text-slate-400 font-bold tracking-[.3em] mt-1">
-                    V7.0 • DEBUG MODE ACTIVE
-                </p>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <select id="f-hub" class="rounded-md px-3 py-1.5 text-xs"><option value="">HUB: TODOS</option></select>
+                <select id="f-ciclo" class="rounded-md px-3 py-1.5 text-xs"><option value="">CICLO: TODOS</option></select>
+                <select id="f-transp" class="rounded-md px-3 py-1.5 text-xs"><option value="">3PL: TODAS</option></select>
+                <button onclick="resetFilters()" class="bg-[#EE4D2D] hover:bg-orange-700 text-white px-5 py-1.5 rounded-md text-xs font-black uppercase transition-all">Limpar</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1600px] mx-auto p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="dashboard-card p-5 border-l-4 border-blue-900">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Frota Total</p>
+                <span id="k-total" class="text-3xl font-black text-blue-900">0</span>
+            </div>
+            <div class="dashboard-card p-5 border-l-4 border-[#EE4D2D]">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Liderança 3PL</p>
+                <span id="k-leader" class="text-xl font-black truncate block">--</span>
+            </div>
+            <div class="dashboard-card p-5 border-l-4 border-sky-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Perfil Top</p>
+                <span id="k-modal" class="text-xl font-black block">--</span>
+            </div>
+            <div class="dashboard-card p-5 border-l-4 border-slate-400">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Última Ref.</p>
+                <span id="k-date" class="text-xl font-black block">--</span>
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-4 filter-box">
-            <select id="filter-hub"><option value="">HUBS: TODOS</option></select>
-            <select id="filter-ciclo"><option value="">CICLOS: TODOS</option></select>
-            <select id="filter-transp"><option value="">3PL: TODAS</option></select>
-            <button onclick="resetFilters()"
-                    class="bg-orange-600 hover:bg-white hover:text-orange-600 text-white px-6 py-2 rounded-lg text-xs font-black transition-all border-2 border-orange-600">
-                LIMPAR
-            </button>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="dashboard-card p-6 lg:col-span-12">
+                <h4 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-4">Tendência de Operação (Últimos 7 Dias)</h4>
+                <div class="h-[300px]"><canvas id="c-evolution"></canvas></div>
+            </div>
+
+            <div class="dashboard-card p-6 lg:col-span-7">
+                <h4 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-4">Volume por Transportadora (3PL)</h4>
+                <div class="h-[400px]"><canvas id="c-market"></canvas></div>
+            </div>
+
+            <div class="dashboard-card p-6 lg:col-span-5">
+                <h4 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-4">Mix de Perfis de Veículos</h4>
+                <div class="h-[400px]"><canvas id="c-perfil"></canvas></div>
+            </div>
+
+            <div class="dashboard-card p-6 lg:col-span-12">
+                <h4 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-4">Performance de Volume por Hub</h4>
+                <div class="h-[400px]"><canvas id="c-hubs"></canvas></div>
+            </div>
         </div>
-    </div>
-</header>
+    </main>
 
-<main class="max-w-[1600px] mx-auto p-8">
+    <script>
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        Chart.register(ChartDataLabels);
+        let dataGlobal = [];
+        let charts = {};
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="dashboard-card p-6 border-t-8 border-blue-900">
-            <p class="text-[10px] font-black text-slate-500 uppercase">Frota Ativa</p>
-            <span id="kpi-total" class="kpi-value">0</span>
-        </div>
-        <div class="dashboard-card p-6 border-t-8 border-orange-500">
-            <p class="text-[10px] font-black text-slate-500 uppercase">Líder 3PL</p>
-            <span id="kpi-leader" class="kpi-value text-xl truncate block">--</span>
-        </div>
-        <div class="dashboard-card p-6 border-t-8 border-cyan-600">
-            <p class="text-[10px] font-black text-slate-500 uppercase">Perfil Top</p>
-            <span id="kpi-modal" class="kpi-value text-xl block">--</span>
-        </div>
-        <div class="dashboard-card p-6 border-t-8 border-slate-800">
-            <p class="text-[10px] font-black text-slate-500 uppercase">Última Ref.</p>
-            <span id="kpi-date" class="kpi-value text-xl block">--</span>
-        </div>
-    </div>
+        async function init() {
+            const resp = await fetch(`${CSV_URL}&cache=${Date.now()}`);
+            const text = await resp.text();
+            const json = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            dataGlobal = json.map(r => {
+                // Acha a coluna de quantidade mesmo se o nome variar um pouco
+                const keyQtd = Object.keys(r).find(k => k.includes('QUANTIDADE'));
+                const keyTransp = Object.keys(r).find(k => k.includes('TRANSPORTADORA'));
+                const keyHub = Object.keys(r).find(k => k.includes('HUB')) || 'HUB';
+                
+                return {
+                    date: r['DATA'],
+                    ciclo: r['CICLO'] || 'N/D',
+                    hub: r['NOME HUB'] || r[keyHub] || 'N/D',
+                    transp: String(r[keyTransp] || '').trim() || 'OUTROS',
+                    perfil: String(r['PERFIL DO VEÍCULO'] || '').trim().toUpperCase(),
+                    qtd: parseInt(String(r[keyQtd] || '0').replace(/\D/g, '')) || 0
+                };
+            }).filter(d => d.date && d.qtd > 0);
 
-        <div class="dashboard-card p-8 lg:col-span-12">
-            <h4 class="font-black text-slate-800 text-sm mb-6 uppercase tracking-widest">
-                Evolução Operacional (7 Dias)
-            </h4>
-            <div class="h-[350px]"><canvas id="chart-evolution"></canvas></div>
-        </div>
+            fillSelect('f-hub', 'hub', 'HUB: TODOS');
+            fillSelect('f-ciclo', 'ciclo', 'CICLO: TODOS');
+            fillSelect('f-transp', 'transp', '3PL: TODAS');
+            
+            document.querySelectorAll('select').forEach(s => s.onchange = render);
+            render();
+        }
 
-        <div class="dashboard-card p-8 lg:col-span-7">
-            <h4 class="font-black text-slate-800 text-sm mb-6 uppercase tracking-widest">
-                Market Share por Transportadora
-            </h4>
-            <div class="h-[400px]"><canvas id="chart-market-share"></canvas></div>
-        </div>
+        function fillSelect(id, key, label) {
+            const items = [...new Set(dataGlobal.map(d => d[key]))].sort();
+            const el = document.getElementById(id);
+            el.innerHTML = `<option value="">${label}</option>`;
+            items.forEach(i => el.innerHTML += `<option value="${i}">${i}</option>`);
+        }
 
-        <div class="dashboard-card p-8 lg:col-span-5">
-            <h4 class="font-black text-slate-800 text-sm mb-6 uppercase tracking-widest">
-                Mix de Perfis de Veículos
-            </h4>
-            <div class="h-[400px]"><canvas id="chart-modal-dist"></canvas></div>
-        </div>
+        function render() {
+            const fH = document.getElementById('f-hub').value;
+            const fC = document.getElementById('f-ciclo').value;
+            const fT = document.getElementById('f-transp').value;
 
-        <div class="dashboard-card p-8 lg:col-span-12">
-            <h4 class="font-black text-slate-800 text-sm mb-6 uppercase tracking-widest">
-                Top Frota 3PL por Hub
-            </h4>
-            <div class="h-[450px]"><canvas id="chart-hub-volume"></canvas></div>
-        </div>
+            const filtered = dataGlobal.filter(d => 
+                (!fH || d.hub === fH) && (!fC || d.ciclo === fC) && (!fT || d.transp === fT)
+            );
 
-    </div>
-</main>
+            // KPIs
+            const total = filtered.reduce((a, b) => a + b.qtd, 0);
+            document.getElementById('k-total').innerText = total.toLocaleString('pt-BR');
+            
+            const tMap = group(filtered, 'transp');
+            const leader = Object.entries(tMap).sort((a,b)=>b[1]-a[1])[0];
+            document.getElementById('k-leader').innerText = leader ? leader[0] : '--';
 
-<script>
-const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
-Chart.register(ChartDataLabels);
+            const pMap = group(filtered, 'perfil');
+            const topP = Object.entries(pMap).sort((a,b)=>b[1]-a[1])[0];
+            document.getElementById('k-modal').innerText = topP ? topP[0] : '--';
+            
+            const dates = [...new Set(filtered.map(d => d.date))].sort();
+            document.getElementById('k-date').innerText = dates.pop() || '--';
 
-let rawData = [];
-let charts = {};
+            // Gráficos
+            drawTendencia(filtered);
+            drawMarket(tMap); // Market Share Real
+            drawPerfil(pMap);
+            drawHubs(filtered);
+        }
 
-function truncateLabel(label, max = 22) {
-    return label.length > max ? label.slice(0, max) + '…' : label;
-}
+        function drawTendencia(data) {
+            const g = group(data, 'date');
+            const labels = Object.keys(g).sort().slice(-7);
+            updateChart('c-evolution', 'line', labels, labels.map(l => g[l]), {
+                borderColor: '#001529', backgroundColor: 'rgba(0,21,41,0.1)', fill: true, tension: 0.4
+            });
+        }
 
-async function init() {
-    const response = await fetch(`${SHEET_CSV}&t=${Date.now()}`);
-    const csvText = await response.text();
-    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+        function drawMarket(tMap) {
+            const sorted = Object.entries(tMap).sort((a,b)=>b[1]-a[1]).slice(0, 10);
+            updateChart('c-market', 'bar', sorted.map(x=>x[0]), sorted.map(x=>x[1]), {
+                indexAxis: 'y', backgroundColor: '#EE4D2D'
+            });
+        }
 
-    rawData = parsed.filter(r => r['DATA'] && r['QUANTIDADE DE VEÍCULOS'])
-        .map(r => ({
-            date: r['DATA'],
-            ciclo: r['CICLO'] || 'N/D',
-            hub: r['NOME HUB'] || r['HUB'] || 'N/D',
-            transp: String(r['TRANSPORTADORA - 3PL'] || 'N/D').trim(),
-            perfil: String(r['PERFIL DO VEÍCULO'] || 'N/D').trim().toUpperCase() || 'N/D',
-            qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS']).replace(/\D/g, '')) || 0
-        }));
+        function drawPerfil(pMap) {
+            const sorted = Object.entries(pMap).sort((a,b)=>b[1]-a[1]);
+            updateChart('c-perfil', 'doughnut', sorted.map(x=>x[0]), sorted.map(x=>x[1]), {
+                backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981']
+            });
+        }
 
-    populateFilters();
-    updateDashboard();
-}
+        function drawHubs(data) {
+            const hMap = group(data, 'hub');
+            const sorted = Object.entries(hMap).sort((a,b)=>b[1]-a[1]).slice(0, 10);
+            const max = sorted[0] ? sorted[0][1] : 1;
+            updateChart('c-hubs', 'bar', sorted.map(x=>x[0]), sorted.map(x=>x[1]), {
+                backgroundColor: sorted.map(h => `rgba(0, 21, 41, ${0.3 + (h[1]/max)*0.7})`)
+            });
+        }
 
-function populateFilters() {
-    const getUnique = key => [...new Set(rawData.map(i => i[key]))].filter(Boolean).sort();
-    const fill = (id, items, prefix) => {
-        const el = document.getElementById(id);
-        el.innerHTML = `<option value="">${prefix}: TODOS</option>`;
-        items.forEach(i => el.innerHTML += `<option value="${i}">${i}</option>`);
-    };
-    fill('filter-hub', getUnique('hub'), 'HUBS');
-    fill('filter-ciclo', getUnique('ciclo'), 'CICLOS');
-    fill('filter-transp', getUnique('transp'), '3PL');
-
-    document.querySelectorAll('select').forEach(s => {
-        s.onchange = () => {
-            s.classList.toggle('ring-2', s.value !== "");
-            s.classList.toggle('ring-orange-500', s.value !== "");
-            updateDashboard();
-        };
-    });
-}
-
-function updateDashboard() {
-    const fHub = filterValue('filter-hub');
-    const fCiclo = filterValue('filter-ciclo');
-    const fTransp = filterValue('filter-transp');
-
-    const filtered = rawData.filter(d =>
-        (!fHub || d.hub === fHub) &&
-        (!fCiclo || d.ciclo === fCiclo) &&
-        (!fTransp || d.transp === fTransp)
-    );
-
-    document.getElementById('kpi-total').innerText =
-        filtered.reduce((a, b) => a + b.qtd, 0).toLocaleString('pt-BR');
-
-    const grouped = {
-        transp: groupBy(filtered, 'transp'),
-        perfil: groupBy(filtered, 'perfil'),
-        hub: groupBy(filtered, 'hub'),
-        date: groupBy(filtered, 'date')
-    };
-
-    const leader = Object.entries(grouped.transp).sort((a, b) => b[1] - a[1])[0];
-    document.getElementById('kpi-leader').innerText = leader ? leader[0] : '--';
-
-    const modal = Object.entries(grouped.perfil).sort((a, b) => b[1] - a[1])[0];
-    document.getElementById('kpi-modal').innerText = modal ? modal[0] : '--';
-
-    const dates = Object.keys(grouped.date).sort((a, b) => parseDate(a) - parseDate(b));
-    document.getElementById('kpi-date').innerText = dates.at(-1) || '--';
-
-    renderCharts(grouped, filtered);
-}
-
-function renderCharts(grouped, data) {
-
-    const sortedDates = Object.keys(grouped.date).sort((a, b) => parseDate(a) - parseDate(b)).slice(-7);
-    renderChart('chart-evolution', 'line',
-        sortedDates,
-        sortedDates.map(d => grouped.date[d] || 0),
-        { borderColor: '#003366', backgroundColor: 'rgba(0,51,102,0.1)', fill: true, tension: 0.3, borderWidth: 5 }
-    );
-
-    const transps = Object.entries(grouped.transp).sort((a, b) => b[1] - a[1]).slice(0, 10);
-    renderChart('chart-market-share', 'bar',
-        transps.map(x => x[0]),
-        transps.map(x => x[1]),
-        { indexAxis: 'y', backgroundColor: '#EE4D2D' }
-    );
-
-    const allowed = ['VUC', 'PASSEIO', 'MOTO', 'VAN', 'FIORINO', 'VAN/KOMBI', 'UTILITÁRIO'];
-    const modals = Object.entries(grouped.perfil).filter(x => allowed.includes(x[0]));
-    renderChart('chart-modal-dist', 'doughnut',
-        modals.map(x => x[0]),
-        modals.map(x => x[1]),
-        { backgroundColor: ['#003366','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981','#6366F1'] }
-    );
-
-    const hubs = Object.entries(grouped.hub).sort((a, b) => b[1] - a[1]).slice(0, 15);
-    const maxVal = hubs[0]?.[1] || 1;
-    renderChart('chart-hub-volume', 'bar',
-        hubs.map(x => x[0]),
-        hubs.map(x => x[1]),
-        { backgroundColor: hubs.map(h => `rgba(0,51,102,${0.3 + (h[1]/maxVal)*0.7})`) }
-    );
-}
-
-function renderChart(id, type, labels, values, extra) {
-    if (charts[id]) charts[id].destroy();
-    charts[id] = new Chart(document.getElementById(id), {
-        type,
-        data: {
-            labels: labels.map(l => truncateLabel(l)),
-            datasets: [{ data: values, ...extra, borderRadius: 5 }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: { padding: { top: 40, right: 50, bottom: 20 } },
-            plugins: {
-                legend: {
-                    display: type === 'doughnut',
-                    position: 'bottom',
-                    labels: { color: '#0f172a', font: { weight: 'bold', size: 12 } }
-                },
-                datalabels: {
-                    color: '#0f172a',
-                    font: { weight: '900', size: 14 },
-                    anchor: 'end',
-                    align: extra.indexAxis === 'y' ? 'right' : 'top',
-                    formatter: v => v.toLocaleString('pt-BR'),
-                    display: ctx => {
-                        const v = ctx.dataset.data[ctx.dataIndex];
-                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                        return total ? v / total > 0.04 : true;
+        function updateChart(id, type, labels, values, extra) {
+            if(charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: type,
+                data: { labels, datasets: [{ data: values, ...extra, borderRadius: 5 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: type === 'doughnut', position: 'bottom' },
+                        datalabels: {
+                            color: '#000', font: { weight: '900', size: 11 },
+                            anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
+                            formatter: (v) => v.toLocaleString('pt-BR')
+                        }
+                    },
+                    scales: type === 'doughnut' ? {} : { 
+                        y: { display: false },
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
                     }
                 }
-            },
-            scales: type === 'doughnut' ? {} : {
-                x: { grid: { display: false }, ticks: { color: '#0f172a', font: { weight: '900', size: 11 } } },
-                y: { display: false, grid: { display: false } }
-            }
+            });
         }
-    });
-}
 
-const groupBy = (arr, key) =>
-    arr.reduce((acc, c) => ((acc[c[key]] = (acc[c[key]] || 0) + c.qtd), acc), {});
-
-const parseDate = s => {
-    if (!s || !s.includes('/')) return new Date(0);
-    const p = s.split('/');
-    return new Date(p[2], p[1] - 1, p[0]);
-};
-
-const filterValue = id => document.getElementById(id).value;
-
-const resetFilters = () => {
-    document.querySelectorAll('select').forEach(s => {
-        s.value = "";
-        s.classList.remove('ring-2','ring-orange-500');
-    });
-    updateDashboard();
-};
-
-init();
-</script>
-
+        function group(arr, key) {
+            return arr.reduce((acc, c) => { acc[c[key]] = (acc[c[key]] || 0) + c.qtd; return acc; }, {});
+        }
+        function resetFilters() { document.querySelectorAll('select').forEach(s => s.value = ""); render(); }
+        init();
+    </script>
 </body>
 </html>
