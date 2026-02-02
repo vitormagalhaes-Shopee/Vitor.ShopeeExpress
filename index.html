@@ -1,129 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopee Express | Logistics Intelligence Ops</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+body { background:#F8F9FA; font-family:'Inter',sans-serif; color:#2D2D2D; }
+.shopee-orange { color:#EE4D2D }
+.bg-shopee { background:#EE4D2D }
+.dashboard-card {
+  background:white; border-radius:12px;
+  box-shadow:0 4px 6px -1px rgba(0,0,0,.05);
+  border:1px solid #E5E7EB;
+}
+.loader { border-top-color:#EE4D2D; animation:spin 1s linear infinite }
+@keyframes spin { to { transform:rotate(360deg) } }
+</style>
+</head>
+
+<body>
+
+<!-- LOADER -->
+<div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+  <div class="loader rounded-full border-8 border-gray-100 h-20 w-20 mb-4"></div>
+  <h2 class="text-xl font-black italic">SHOPEE <span class="shopee-orange">EXPRESS</span></h2>
+  <p class="text-xs font-bold text-gray-400 tracking-widest uppercase">Logistics Intelligence</p>
+</div>
+
+<header class="bg-white border-b p-4 sticky top-0 z-40">
+  <div class="max-w-[1400px] mx-auto flex justify-between items-center">
+    <h1 class="font-black italic">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
+
+    <div class="flex gap-2">
+      <select id="filter-hub"><option value="">TODOS HUBS</option></select>
+      <select id="filter-ciclo"><option value="">TODOS CICLOS</option></select>
+      <select id="filter-transp"><option value="">TODAS TRANSP.</option></select>
+      <select id="filter-perfil"><option value="">TODOS PERFIS</option></select>
+      <select id="filter-days">
+        <option value="7">7 dias</option>
+        <option value="14">14 dias</option>
+        <option value="30">30 dias</option>
+      </select>
+      <button onclick="resetFilters()">Limpar</button>
+    </div>
+
+    <div id="status" class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded">LIVE</div>
+  </div>
+</header>
+
+<main class="max-w-[1400px] mx-auto p-6 grid gap-6">
+
+<div class="grid grid-cols-3 gap-4">
+  <div class="dashboard-card p-4">
+    <p class="text-xs text-gray-400">Frota</p>
+    <h2 id="kpi-total" class="text-3xl font-black">0</h2>
+  </div>
+  <div class="dashboard-card p-4">
+    <p class="text-xs text-gray-400">Ciclo</p>
+    <h2 id="kpi-ciclo" class="text-3xl font-black">-</h2>
+  </div>
+  <div class="dashboard-card p-4">
+    <p class="text-xs text-gray-400">Sync</p>
+    <h2 id="sync-time" class="text-3xl font-black">--:--</h2>
+  </div>
+</div>
+
+<div class="dashboard-card p-6"><canvas id="chart-evolution"></canvas></div>
+<div class="dashboard-card p-6"><canvas id="chart-perfil"></canvas></div>
+<div class="dashboard-card p-6"><canvas id="chart-transp"></canvas></div>
+
+</main>
+
 <script>
 const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
 
 let rawData = [];
 let charts = {};
 
-const validPerfis = ['VUC','PASSEIO','MOTO','VAN','FIORINO','VAN/KOMBI','UTILITÁRIO'];
-
 Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.color = '#828282';
 
 async function init() {
   try {
-    // ❗ ERRO ORIGINAL: template string quebrada
     const response = await fetch(`${SHEET_CSV}&cache=${Date.now()}`);
-    const csvData = await response.text();
+    const csv = await response.text();
 
-    const parsed = Papa.parse(csvData, {
-      header: true,
-      skipEmptyLines: true
-    }).data;
-
-    rawData = parsed.map(r => {
-      let qtd = parseInt(String(r['QUANTIDADE DE VEÍCULOS'] || 0).replace(/\D/g,'')) || 0;
-      if (qtd <= 0) return null;
-
-      return {
-        data: new Date(r['DATA']),
-        hub: r['HUB']?.trim() || null,
-        ciclo: r['CICLO (AM / DD)']?.trim() || null,
-        transp: r['TRANSPORTADORA']?.trim() || null,
-        perfil: r['PERFIL DO VEÍCULO']?.trim().toUpperCase() || null,
-        qtd
-      };
-    }).filter(Boolean);
+    rawData = Papa.parse(csv,{header:true,skipEmptyLines:true}).data
+      .map(r => ({
+        data:new Date(r['DATA']),
+        hub:r['HUB'],
+        ciclo:r['CICLO (AM / DD)'],
+        transp:r['TRANSPORTADORA'],
+        perfil:r['PERFIL DO VEÍCULO'],
+        qtd:parseInt(r['QUANTIDADE DE VEÍCULOS'])||0
+      }))
+      .filter(d=>d.qtd>0);
 
     populateFilters();
     attachFilterEvents();
     processAndUpdate();
 
-    // Loader OK
-    document.getElementById('loading').style.opacity = '0';
-    setTimeout(() => document.getElementById('loading').style.display='none',500);
-
+    document.getElementById('loading').style.display='none';
     document.getElementById('sync-time').innerText =
       new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 
-  } catch (err) {
-    console.error(err);
-    const status = document.getElementById('status');
-    status.innerText = 'ERRO';
-    status.classList.replace('bg-green-500','bg-red-500');
+  } catch(e) {
+    console.error(e);
+    const s=document.getElementById('status');
+    s.innerText='ERRO';
+    s.classList.replace('bg-green-500','bg-red-500');
   }
 }
 
 function populateFilters() {
-  const unique = key =>
-    [...new Set(rawData.map(d => d[key]).filter(Boolean))].sort();
-
-  const fill = (id, list) => {
-    const el = document.getElementById(id);
-    el.innerHTML = el.options[0].outerHTML;
-    list.forEach(v => {
-      const o = document.createElement('option');
-      o.value = v;
-      o.innerText = v;
-      el.appendChild(o);
+  const unique=k=>[...new Set(rawData.map(d=>d[k]).filter(Boolean))];
+  const fill=(id,list)=>{
+    const el=document.getElementById(id);
+    el.innerHTML=el.options[0].outerHTML;
+    list.forEach(v=>{
+      const o=document.createElement('option');
+      o.value=v;o.innerText=v;el.appendChild(o);
     });
   };
-
-  fill('filter-hub', unique('hub'));
-  fill('filter-ciclo', unique('ciclo'));
-  fill('filter-transp', unique('transp'));
-  fill('filter-perfil', unique('perfil'));
+  fill('filter-hub',unique('hub'));
+  fill('filter-ciclo',unique('ciclo'));
+  fill('filter-transp',unique('transp'));
+  fill('filter-perfil',unique('perfil'));
 }
 
 function attachFilterEvents() {
   ['filter-hub','filter-ciclo','filter-transp','filter-perfil','filter-days']
-    .forEach(id =>
-      document.getElementById(id).addEventListener('change', processAndUpdate)
-    );
+    .forEach(id=>document.getElementById(id).addEventListener('change',processAndUpdate));
 }
 
 function resetFilters() {
   ['filter-hub','filter-ciclo','filter-transp','filter-perfil','filter-days']
-    .forEach(id => document.getElementById(id).value = '');
+    .forEach(id=>document.getElementById(id).value="");
   processAndUpdate();
 }
 
-/* ✅ FUNÇÃO FINALIZADA CORRETAMENTE */
 function processAndUpdate() {
-  const fHub = document.getElementById('filter-hub').value;
-  const fCiclo = document.getElementById('filter-ciclo').value;
-  const fTransp = document.getElementById('filter-transp').value;
-  const fPerfil = document.getElementById('filter-perfil').value;
-  const days = parseInt(document.getElementById('filter-days').value) || 7;
+  const fHub=document.getElementById('filter-hub').value;
+  const fCiclo=document.getElementById('filter-ciclo').value;
+  const fTransp=document.getElementById('filter-transp').value;
+  const fPerfil=document.getElementById('filter-perfil').value;
+  const days=parseInt(document.getElementById('filter-days').value)||7;
 
-  const fromDate = new Date();
-  fromDate.setDate(fromDate.getDate() - days);
+  const from=new Date(); from.setDate(from.getDate()-days);
 
-  const filtered = rawData.filter(d =>
-    (!fHub || d.hub === fHub) &&
-    (!fCiclo || d.ciclo === fCiclo) &&
-    (!fTransp || d.transp === fTransp) &&
-    (!fPerfil || d.perfil === fPerfil) &&
-    d.data >= fromDate
+  const filtered=rawData.filter(d=>
+    (!fHub||d.hub===fHub) &&
+    (!fCiclo||d.ciclo===fCiclo) &&
+    (!fTransp||d.transp===fTransp) &&
+    (!fPerfil||d.perfil===fPerfil) &&
+    d.data>=from
   );
 
   updateKPIs(filtered);
   updateCharts(filtered);
 }
 
-/* KPIs */
-function updateKPIs(data) {
-  const total = data.reduce((s,d)=>s+d.qtd,0);
-  document.getElementById('kpi-total').innerText = total.toLocaleString();
-
-  const ciclo = data[0]?.ciclo || '-';
-  document.getElementById('kpi-ciclo').innerText = ciclo;
+function updateKPIs(data){
+  document.getElementById('kpi-total').innerText =
+    data.reduce((s,d)=>s+d.qtd,0);
+  document.getElementById('kpi-ciclo').innerText =
+    data[0]?.ciclo || '-';
 }
 
-/* Charts (stub seguro – não quebra renderização) */
-function updateCharts(data) {
-  // Aqui entram os mesmos gráficos que você já tinha
-  // Apenas garantimos que o JS não quebra mais
+function updateCharts(data){
+  // Mantido vazio para não quebrar
 }
 
 init();
 </script>
+
+</body>
+</html>
