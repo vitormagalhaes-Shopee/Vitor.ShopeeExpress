@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHOPEE EXPRESS | Logistics Tower V21</title>
+    <title>SHOPEE EXPRESS | Logistics Tower V22</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,11 +11,21 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #F1F5F9; font-family: 'Inter', sans-serif; color: #000; }
-        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; position: relative; }
+        .dashboard-card { background: white !important; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; position: relative; }
         .shopee-bg { background-color: #EE4D2D; }
+        
+        /* FILTROS TOTALMENTE VISÍVEIS */
         label { color: #000 !important; font-weight: 900 !important; font-size: 11px; margin-bottom: 3px; display: block; text-transform: uppercase; }
-        .filter-field { background-color: #FFF !important; color: #000 !important; border: 2px solid #334155 !important; border-radius: 6px; padding: 5px 10px; font-weight: bold; font-size: 12px; width: 100%; }
-        .empty-state { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #94A3B8; text-transform: uppercase; font-size: 12px; text-align: center; width: 100%; }
+        .filter-field { 
+            background-color: #FFFFFF !important; 
+            color: #000000 !important; 
+            border: 2px solid #1E293B !important; 
+            border-radius: 6px; 
+            padding: 6px 12px; 
+            font-weight: bold;
+            font-size: 13px;
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body class="p-0 m-0">
@@ -23,19 +33,19 @@
     <header class="bg-[#001529] text-white p-6 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
         <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-4">
-                <div class="shopee-bg p-2 rounded-lg text-2xl">🚀</div>
+                <div class="shopee-bg p-2 rounded-lg text-2xl font-bold italic">S</div>
                 <div>
                     <h1 class="font-black text-2xl italic uppercase text-white leading-none">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
                     <p class="text-[10px] font-bold text-slate-400 tracking-[0.3em]">LOGISTICS INTELLIGENCE TOWER</p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-end gap-4 bg-slate-900/50 p-4 rounded-xl border border-white/10">
-                <div class="w-36"><label>Início</label><input type="date" id="d-start" class="filter-field"></div>
-                <div class="w-36"><label>Fim</label><input type="date" id="d-end" class="filter-field"></div>
-                <div class="w-48"><label>Hub</label><select id="f-hub" class="filter-field"><option value="">TODOS</option></select></div>
-                <div class="w-48"><label>3PL</label><select id="f-transp" class="filter-field"><option value="">TODAS</option></select></div>
-                <button onclick="location.reload()" class="shopee-bg text-white px-8 py-2 rounded-lg font-black text-xs uppercase hover:scale-105 transition-all shadow-lg">LIMPAR</button>
+            <div class="flex flex-wrap items-end gap-4 bg-slate-900 p-4 rounded-xl border border-white/10">
+                <div class="w-36"><label>Início</label><input type="date" id="d-start" class="filter-field w-full"></div>
+                <div class="w-36"><label>Fim</label><input type="date" id="d-end" class="filter-field w-full"></div>
+                <div class="w-48"><label>Hub</label><select id="f-hub" class="filter-field w-full"><option value="">TODOS</option></select></div>
+                <div class="w-48"><label>Transportadora</label><select id="f-transp" class="filter-field w-full"><option value="">TODAS</option></select></div>
+                <button onclick="location.reload()" class="shopee-bg text-white px-8 py-2 rounded-lg font-black text-xs uppercase shadow-lg hover:brightness-110">RESET</button>
             </div>
         </div>
     </header>
@@ -43,28 +53,28 @@
     <main class="max-w-[1600px] mx-auto p-6 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="dashboard-card border-l-8 border-blue-900 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Frota Total</p><span id="k-total" class="text-3xl font-black text-blue-900">0</span></div>
-            <div class="dashboard-card border-l-8 border-[#EE4D2D] text-center"><p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black truncate block">--</span></div>
-            <div class="dashboard-card border-l-8 border-sky-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Mix Predominante</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
-            <div class="dashboard-card border-l-8 border-slate-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Data Ref.</p><span id="k-date" class="text-lg font-black block">--</span></div>
+            <div class="dashboard-card border-l-8 border-[#EE4D2D] text-center"><p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black truncate block text-[#EE4D2D]">--</span></div>
+            <div class="dashboard-card border-l-8 border-sky-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Perfil Top</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
+            <div class="dashboard-card border-l-8 border-slate-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Ref. Base</p><span id="k-date" class="text-lg font-black block text-slate-500">--</span></div>
         </div>
 
-        <div class="dashboard-card min-h-[300px]" id="cont-line">
+        <div class="dashboard-card">
             <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">📈 Evolução Operacional (Volume Diário)</h4>
             <div class="h-[250px]"><canvas id="c-line"></canvas></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="dashboard-card lg:col-span-7 min-h-[450px]" id="cont-bar">
+            <div class="dashboard-card lg:col-span-7">
                 <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic text-[#EE4D2D]">🏆 Top 10 Transportadoras por Volume</h4>
                 <div class="h-[400px]"><canvas id="c-bar"></canvas></div>
             </div>
-            <div class="dashboard-card lg:col-span-5 min-h-[450px]" id="cont-pie">
+            <div class="dashboard-card lg:col-span-5">
                 <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic text-blue-900">📊 Mix de Perfis de Veículos</h4>
-                <div class="h-[400px]"><canvas id="c-pie"></canvas></div>
+                <div class="h-[400px] pr-4"><canvas id="c-pie"></canvas></div>
             </div>
         </div>
 
-        <div class="dashboard-card min-h-[350px]" id="cont-hub">
+        <div class="dashboard-card">
             <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">🏢 Performance de Volume por Hub</h4>
             <div class="h-[300px]"><canvas id="c-hub"></canvas></div>
         </div>
@@ -81,7 +91,6 @@
             s = s.trim();
             if (s.includes('/')) {
                 const p = s.split('/');
-                if (p.length !== 3) return null;
                 const d = new Date(p[2], p[1] - 1, p[0]);
                 return isNaN(d) ? null : d;
             }
@@ -98,25 +107,29 @@
             const raw = Papa.parse(t, {header:true, skipEmptyLines:true}).data;
 
             database = raw.map(row => {
-                const colTransp = Object.keys(row).find(k => k.trim().toUpperCase().includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
-                const colQtd = Object.keys(row).find(k => k.trim().toUpperCase().includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
-                const colPerfil = Object.keys(row).find(k => k.trim().toUpperCase().includes('PERFIL')) || 'PERFIL DO VEÍCULO';
-                const colHub = Object.keys(row).find(k => k.trim().toUpperCase().includes('NOME HUB')) || 'NOME HUB';
+                // Caça as colunas mesmo que o nome mude um pouco
+                const colTransp = Object.keys(row).find(k => k.toUpperCase().includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
+                const colQtd = Object.keys(row).find(k => k.toUpperCase().includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
+                const colPerfil = Object.keys(row).find(k => k.toUpperCase().includes('PERFIL')) || 'PERFIL DO VEÍCULO';
+                const colHub = Object.keys(row).find(k => k.toUpperCase().includes('HUB')) || 'NOME HUB';
 
+                const valTransp = (row[colTransp] || '').trim();
                 const dObj = parseDate(row['DATA']);
-                if(!dObj) return null;
+
+                // Validação Tech Lead: Ignora lixo e erros de fórmula do Excel
+                if(!dObj || valTransp === '' || valTransp.includes('#') || valTransp === 'Sem data') return null;
 
                 return {
                     dateStr: row['DATA'],
                     dateObj: dObj,
                     hub: (row[colHub] || 'N/D').trim(),
-                    transp: (row[colTransp] || 'N/D').trim(),
+                    transp: valTransp,
                     perfil: (row[colPerfil] || 'N/D').toUpperCase().trim(),
                     qtd: parseInt(String(row[colQtd] || '0').replace(/\D/g,'')) || 0
                 };
             }).filter(d => d && d.qtd > 0);
 
-            const dates = database.map(d => d.dateObj);
+            const dates = database.map(d => d.dateObj).filter(d => d);
             const maxD = new Date(Math.max(...dates));
             const minD = new Date(maxD);
             minD.setDate(maxD.getDate() - 7);
@@ -146,17 +159,7 @@
                 (!hV || d.hub === hV) && (!tV || d.transp === tV)
             );
 
-            // Reseta Containers de Mensagem
-            document.querySelectorAll('.empty-state').forEach(e => e.remove());
-
-            if (f.length === 0) {
-                ['c-line', 'c-bar', 'c-pie', 'c-hub'].forEach(id => {
-                    const canvas = document.getElementById(id);
-                    if(myCharts[id]) myCharts[id].destroy();
-                    canvas.parentElement.insertAdjacentHTML('afterbegin', '<div class="empty-state">Sem dados para este filtro</div>');
-                });
-                return;
-            }
+            if (f.length === 0) return;
 
             const trMap = group(f, 'transp');
             const pfMap = group(f, 'perfil');
@@ -186,13 +189,31 @@
                 data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 5 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    layout: { padding: { top: 35, right: 35, left: 10, bottom: 10 } },
+                    // AJUSTE CRÍTICO DE LAYOUT PARA A LEGENDA NÃO SUMIR
+                    layout: { padding: { top: 20, right: (id === 'c-pie' ? 100 : 40), left: 10, bottom: 20 } },
                     plugins: {
-                        legend: { display: type === 'doughnut', position: 'right', labels: { color: '#000', font: { weight: 'bold', size: 10 } } },
-                        datalabels: { color: '#000', font: { weight: 'bold', size: 10 }, anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top', formatter: v => v.toLocaleString('pt-BR') }
+                        legend: { 
+                            display: type === 'doughnut', 
+                            position: 'right',
+                            align: 'center',
+                            labels: { 
+                                color: '#000', 
+                                font: { weight: 'bold', size: 11 },
+                                boxWidth: 15,
+                                padding: 15
+                            } 
+                        },
+                        datalabels: { 
+                            color: '#000', 
+                            font: { weight: 'bold', size: 10 }, 
+                            anchor: 'end', 
+                            align: extra.indexAxis === 'y' ? 'right' : 'top', 
+                            formatter: v => v.toLocaleString('pt-BR'),
+                            offset: 5
+                        }
                     },
                     scales: type === 'doughnut' ? {} : {
-                        y: { display: false, grace: '20%' },
+                        y: { display: false, grace: '25%' },
                         x: { grid: { display: false }, ticks: { color: '#000', font: { weight: 'bold', size: 10 } } }
                     }
                 }
