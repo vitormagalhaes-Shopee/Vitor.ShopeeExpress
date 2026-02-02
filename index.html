@@ -1,199 +1,263 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shopee Express | Logistics Intelligence Ops</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-body{font-family:'Inter',sans-serif;background:#F8F9FA;color:#2D2D2D}
-.dashboard-card{background:#fff;border-radius:12px;border:1px solid #E5E7EB;box-shadow:0 4px 6px -1px rgba(0,0,0,.05)}
-.loader{border-top-color:#EE4D2D;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee Express | Logistics Intelligence Ops</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { background-color: #F8F9FA; font-family: 'Inter', sans-serif; color: #2D2D2D; }
+        .shopee-orange { color: #EE4D2D; }
+        .bg-shopee { background-color: #EE4D2D; }
+        .card-header { border-bottom: 1px solid #F0F0F0; padding-bottom: 12px; margin-bottom: 16px; }
+        .dashboard-card { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #E5E7EB;
+        }
+        .loader { border-top-color: #EE4D2D; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
-
 <body>
-<div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-<div class="loader border-8 border-gray-100 rounded-full w-16 h-16 mb-4"></div>
-<strong>SHOPEE EXPRESS</strong>
-</div>
+    <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <div class="loader rounded-full border-8 border-gray-100 h-20 w-20 mb-4"></div>
+        <h2 class="text-xl font-black text-gray-800 italic uppercase">SHOPEE <span class="shopee-orange">EXPRESS</span></h2>
+    </div>
 
-<header class="bg-white border-b p-4 sticky top-0 z-40">
-<div class="max-w-[1400px] mx-auto flex justify-between items-center">
-<strong class="italic">LOGISTICS INTELLIGENCE</strong>
-<div class="flex gap-2">
-<select id="filter-hub" class="border px-3 py-1 rounded text-xs"><option value="">HUB</option></select>
-<select id="filter-ciclo" class="border px-3 py-1 rounded text-xs"><option value="">CICLO</option></select>
-<select id="filter-transp" class="border px-3 py-1 rounded text-xs"><option value="">TRANSPORTADORA</option></select>
-<select id="filter-perfil" class="border px-3 py-1 rounded text-xs"><option value="">PERFIL</option></select>
-</div>
-</div>
-</header>
+    <header class="bg-white border-b border-gray-200 p-4 sticky top-0 z-40">
+        <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-shopee rounded-lg flex items-center justify-center text-white shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                </div>
+                <div>
+                    <h1 class="font-black text-xl uppercase italic tracking-tighter">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
+                    <span class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Operations Control Center</span>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-200">
+                <select id="filter-hub" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none"><option value="">TODOS OS HUBS</option></select>
+                <select id="filter-ciclo" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none"><option value="">TODOS OS CICLOS</option></select>
+                <select id="filter-transp" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none"><option value="">TODAS AS TRANSP</option></select>
+                <select id="filter-perfil" class="text-xs font-bold bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none"><option value="">TODOS OS PERFIS</option></select>
+                <button onclick="resetFilters()" class="text-xs font-bold text-gray-500 hover:text-orange-600 px-2 uppercase">Limpar</button>
+            </div>
+        </div>
+    </header>
 
-<main class="max-w-[1400px] mx-auto p-6">
+    <main class="max-w-[1400px] mx-auto p-4 md:p-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <div class="dashboard-card p-6 border-l-4 border-[#EE4D2D]">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Frota Consolidada</p>
+                <h3 id="kpi-total" class="text-3xl font-black text-gray-800">0</h3>
+            </div>
+            <div class="dashboard-card p-6 border-l-4 border-blue-600">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Veículos / Transp</p>
+                <h3 id="kpi-v-transp" class="text-3xl font-black text-gray-800">0</h3>
+            </div>
+            <div class="dashboard-card p-6 border-l-4 border-blue-400">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Veículos / Modal</p>
+                <h3 id="kpi-v-modal" class="text-3xl font-black text-gray-800">0</h3>
+            </div>
+            <div class="dashboard-card p-6 border-l-4 border-orange-200">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Ciclo Predominante</p>
+                <h3 id="kpi-ciclo" class="text-3xl font-black text-gray-800 italic">-</h3>
+            </div>
+            <div class="dashboard-card p-6 border-l-4 border-gray-200">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Sincronização</p>
+                <h3 id="sync-time" class="text-2xl font-black text-gray-400 italic uppercase">--:--</h3>
+            </div>
+        </div>
 
-<!-- KPIs -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-<div class="dashboard-card p-4 border-l-4 border-orange-500">
-<p class="text-xs text-gray-400 font-bold">FROTA TOTAL</p>
-<h2 id="kpi-total" class="text-3xl font-black">—</h2>
-</div>
-<div class="dashboard-card p-4 border-l-4 border-blue-500">
-<p class="text-xs text-gray-400 font-bold">VEÍCULOS POR TRANSPORTADORA</p>
-<h2 id="kpi-transp" class="text-3xl font-black">—</h2>
-</div>
-<div class="dashboard-card p-4 border-l-4 border-indigo-500">
-<p class="text-xs text-gray-400 font-bold">VEÍCULOS POR MODAL</p>
-<h2 id="kpi-modal" class="text-3xl font-black">—</h2>
-</div>
-<div class="dashboard-card p-4 border-l-4 border-gray-300">
-<p class="text-xs text-gray-400 font-bold">ÚLTIMA SYNC</p>
-<h2 id="sync-time" class="text-xl font-black text-gray-500">--:--</h2>
-</div>
-</div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="dashboard-card p-6 lg:col-span-12">
+                <div class="card-header flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <h4 class="font-black text-gray-700 uppercase text-sm italic">Evolução Diária</h4>
+                        <div id="ev-total-periodo" class="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">TOTAL: 0</div>
+                    </div>
+                    <select id="filter-days" onchange="processAndUpdate()" class="text-[10px] font-bold border rounded px-2 py-1">
+                        <option value="7">ÚLTIMOS 7 DIAS</option>
+                        <option value="14">ÚLTIMOS 14 DIAS</option>
+                        <option value="30">ÚLTIMOS 30 DIAS</option>
+                    </select>
+                </div>
+                <div class="h-64"><canvas id="chart-evolution"></canvas></div>
+            </div>
 
-<!-- EVOLUÇÃO -->
-<div class="dashboard-card p-6 mb-6">
-<div class="flex justify-between items-center mb-2">
-<strong class="italic">EVOLUÇÃO DIÁRIA</strong>
-<select id="filter-days" class="border rounded px-2 py-1 text-xs">
-<option value="7">7 dias</option>
-<option value="14">14 dias</option>
-<option value="30">30 dias</option>
-</select>
-</div>
-<p class="text-sm font-bold mb-2">Total no período: <span id="total-periodo">—</span></p>
-<div class="h-64"><canvas id="chart-evolution"></canvas></div>
-</div>
+            <div class="dashboard-card p-6 lg:col-span-7">
+                <div class="card-header"><h4 class="font-black text-gray-700 uppercase text-sm italic">Volume por Perfil</h4></div>
+                <div class="h-80"><canvas id="chart-perfil"></canvas></div>
+            </div>
+            <div class="dashboard-card p-6 lg:col-span-5">
+                <div class="card-header"><h4 class="font-black text-gray-700 uppercase text-sm italic">Market Share Parceiros</h4></div>
+                <div class="h-80"><canvas id="chart-transp"></canvas></div>
+            </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-<div class="dashboard-card p-6">
-<strong class="italic">PERFIL DE VEÍCULO</strong>
-<div class="h-72"><canvas id="chart-perfil"></canvas></div>
-</div>
-<div class="dashboard-card p-6">
-<strong class="italic">MARKET SHARE PARCEIROS</strong>
-<div class="h-72"><canvas id="chart-transp"></canvas></div>
-</div>
-</div>
+            <div class="dashboard-card p-6 lg:col-span-6">
+                <div class="h-72"><canvas id="chart-hubs"></canvas></div>
+            </div>
+            <div class="dashboard-card p-6 lg:col-span-6">
+                <div class="h-72"><canvas id="chart-ciclo-hub"></canvas></div>
+            </div>
+        </div>
+    </main>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-<div class="dashboard-card p-6">
-<strong class="italic">VOLUME POR HUB</strong>
-<div class="h-72"><canvas id="chart-hubs"></canvas></div>
-</div>
-<div class="dashboard-card p-6">
-<strong class="italic">AM vs DD</strong>
-<div class="h-72"><canvas id="chart-ciclo"></canvas></div>
-</div>
-</div>
+    <script>
+        const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        let rawData = [];
+        let charts = {};
 
-</main>
+        async function init() {
+            try {
+                const response = await fetch(`${SHEET_CSV}&cache=${Date.now()}`);
+                const csvData = await response.text();
+                const parsed = Papa.parse(csvData, { header: true, skipEmptyLines: true });
+                
+                // MAPEAMENTO DEFENSIVO (Busca nomes de colunas mesmo com espaços ou acentos)
+                rawData = parsed.data.map(r => {
+                    const getVal = (names) => {
+                        const key = Object.keys(r).find(k => names.includes(k.trim().toUpperCase()));
+                        return key ? r[key] : null;
+                    };
 
-<script>
-const SHEET="https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
-let raw=[],charts={};
-const PERFIS=["VUC","PASSEIO","MOTO","VAN","FIORINO","VAN/KOMBI","UTILITÁRIO"];
+                    let dStr = getVal(["DATA", "DATE"]);
+                    let qVal = getVal(["QUANTIDADE DE VEÍCULOS", "QUANTIDADE", "QTD"]);
+                    let tVal = String(getVal(["TRANSPORTADORA", "TRANSP"]) || '').trim().toUpperCase();
+                    let pVal = String(getVal(["PERFIL DO VEÍCULO", "PERFIL"]) || '').trim().toUpperCase();
 
-function normalizeDate(v){
-if(!v)return null;
-if(!isNaN(v)&&v>30000)return new Date((v-25569)*86400*1000);
-if(typeof v==="string"){
-if(/^\d{2}\/\d{2}\/\d{4}$/.test(v)){let[d,m,y]=v.split("/");return new Date(`${y}-${m}-${d}`)}
-if(/^\d{4}-\d{2}-\d{2}$/.test(v))return new Date(v)
-}
-const d=new Date(v);return isNaN(d)?null:d;
-}
-function clean(v){
-if(!v)return null;
-v=String(v).trim().toUpperCase();
-if(v==="ND"||v==="#REF!")return null;
-return v;
-}
+                    // Limpeza de Lixo
+                    if (['ND', '#REF!', '', 'NULL', '#N/A'].includes(tVal)) tVal = null;
+                    
+                    return {
+                        data: dStr,
+                        ciclo: String(getVal(["CICLO (AM / DD)", "CICLO"]) || 'N/D').toUpperCase(),
+                        hub: String(getVal(["HUB"]) || 'N/D').toUpperCase(),
+                        transp: tVal,
+                        perfil: pVal,
+                        qtd: parseInt(String(qVal || 0).replace(/\D/g, '')) || 0
+                    };
+                }).filter(item => item.transp && item.qtd > 0);
 
-async function init(){
-const csv=await fetch(SHEET+"&t="+Date.now()).then(r=>r.text());
-const parsed=Papa.parse(csv,{header:true,skipEmptyLines:true}).data;
+                console.table(rawData.slice(0, 5)); // Veja os dados no F12
 
-raw=parsed.map(r=>{
-const perfil=clean(r["PERFIL DO VEÍCULO"]);
-return{
-date:normalizeDate(r["DATA"]),
-hub:clean(r["HUB"]),
-ciclo:clean(r["CICLO (AM / DD)"]),
-transp:clean(r["TRANSPORTADORA"]),
-perfil:PERFIS.includes(perfil)?perfil:null,
-qtd:parseInt(String(r["QUANTIDADE DE VEÍCULOS"]||0).replace(/\D/g,""))||0
-}
-}).filter(d=>d.date&&d.qtd>0);
+                populateFilters();
+                processAndUpdate();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sync-time').innerText = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            } catch (e) { console.error("Erro Crítico:", e); }
+        }
 
-populate();
-update();
-document.getElementById("sync-time").innerText=new Date().toLocaleTimeString();
-document.getElementById("loading").style.display="none";
-}
+        function populateFilters() {
+            const fill = (id, key) => {
+                const values = [...new Set(rawData.map(d => d[key]))].sort();
+                const el = document.getElementById(id);
+                values.forEach(v => { if(v) el.innerHTML += `<option value="${v}">${v}</option>`; });
+            };
+            fill('filter-hub', 'hub');
+            fill('filter-ciclo', 'ciclo');
+            fill('filter-transp', 'transp');
+            fill('filter-perfil', 'perfil');
+        }
 
-function populate(){
-["hub","ciclo","transp","perfil"].forEach(k=>{
-const el=document.getElementById("filter-"+k);
-[...new Set(raw.map(d=>d[k]).filter(Boolean))].forEach(v=>{
-el.innerHTML+=`<option value="${v}">${v}</option>`;
-});
-el.onchange=update;
-});
-document.getElementById("filter-days").onchange=update;
-}
+        function processAndUpdate() {
+            const f = {
+                hub: document.getElementById('filter-hub').value,
+                ciclo: document.getElementById('filter-ciclo').value,
+                transp: document.getElementById('filter-transp').value,
+                perfil: document.getElementById('filter-perfil').value,
+                days: parseInt(document.getElementById('filter-days').value)
+            };
 
-function update(){
-let d=[...raw];
-["hub","ciclo","transp","perfil"].forEach(k=>{
-const v=document.getElementById("filter-"+k).value;
-if(v)d=d.filter(x=>x[k]===v);
-});
+            const filtered = rawData.filter(d => 
+                (!f.hub || d.hub === f.hub) &&
+                (!f.ciclo || d.ciclo === f.ciclo) &&
+                (!f.transp || d.transp === f.transp) &&
+                (!f.perfil || d.perfil === f.perfil)
+            );
 
-const days=parseInt(filter-days.value);
-const dates=d.map(x=>x.date).filter(x=>x instanceof Date);
-if(dates.length){
-const max=new Date(Math.max(...dates));
-const min=new Date(max);min.setDate(min.getDate()-days+1);
-d=d.filter(x=>x.date>=min);
-}
+            // KPIs
+            const total = filtered.reduce((a, b) => a + b.qtd, 0);
+            document.getElementById('kpi-total').innerText = total.toLocaleString('pt-BR');
+            document.getElementById('kpi-v-transp').innerText = new Set(filtered.map(d => d.transp)).size;
+            document.getElementById('kpi-v-modal').innerText = new Set(filtered.map(d => d.perfil)).size;
 
-updateKPIs(d);
-renderCharts(d);
-}
+            updateCharts(filtered, f.days);
+        }
 
-function updateKPIs(d){
-if(!d.length){kpi-total.innerText=kpi-transp.innerText=kpi-modal.innerText=total-periodo.innerText="—";return;}
-const total=d.reduce((a,b)=>a+b.qtd,0);
-kpi-total.innerText=total.toLocaleString("pt-BR");
-total-periodo.innerText=total.toLocaleString("pt-BR");
-kpi-transp.innerText=total.toLocaleString("pt-BR");
-kpi-modal.innerText=total.toLocaleString("pt-BR");
-}
+        function updateCharts(data, days) {
+            // 1. Evolução (Últimos N dias)
+            const daily = data.reduce((a, b) => { a[b.data] = (a[b.data] || 0) + b.qtd; return a; }, {});
+            const labels = Object.keys(daily).sort().slice(-days);
+            const vals = labels.map(l => daily[l]);
+            document.getElementById('ev-total-periodo').innerText = `TOTAL: ${vals.reduce((a,b)=>a+b,0)}`;
+            
+            render('chart-evolution', 'line', labels, vals, '#EE4D2D');
 
-function renderCharts(d){
-Object.values(charts).forEach(c=>c.destroy?.());
+            // 2. Perfil (Somente os Permitidos)
+            const allowed = ["VUC", "PASSEIO", "MOTO", "VAN", "FIORINO", "VAN/KOMBI", "UTILITARIO", "UTILITÁRIO"];
+            const pMap = data.reduce((a, b) => { 
+                if(allowed.includes(b.perfil)) a[b.perfil] = (a[b.perfil] || 0) + b.qtd; 
+                return a; 
+            }, {});
+            render('chart-perfil', 'bar', Object.keys(pMap), Object.values(pMap), '#1E3A8A', 'y');
 
-const dm={};d.forEach(x=>{const k=x.date.toLocaleDateString();dm[k]=(dm[k]||0)+x.qtd});
-charts.e=new Chart(chart-evolution,{type:"line",data:{labels:Object.keys(dm),datasets:[{data:Object.values(dm),borderColor:"#EE4D2D",tension:.4}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{display:false}}}}});
+            // 3. Market Share (Top 5 + Outros)
+            const tMap = data.reduce((a, b) => { a[b.transp] = (a[b.transp] || 0) + b.qtd; return a; }, {});
+            const tSorted = Object.entries(tMap).sort((a,b) => b[1]-a[1]);
+            const top = tSorted.slice(0, 5);
+            const rest = tSorted.slice(5).reduce((a,b) => a + b[1], 0);
+            if(rest > 0) top.push(["OUTROS", rest]);
+            render('chart-transp', 'doughnut', top.map(x=>x[0]), top.map(x=>x[1]), ['#003f5c','#2f4b7c','#665191','#a05195','#d45087','#f95d6a']);
 
-const pm={};d.forEach(x=>x.perfil&&(pm[x.perfil]=(pm[x.perfil]||0)+x.qtd));
-charts.p=new Chart(chart-perfil,{type:"bar",data:{labels:Object.keys(pm),datasets:[{data:Object.values(pm),backgroundColor:"#3B82F6"}]},options:{plugins:{legend:{display:false}}}});
+            // 4. Hubs (Top 10)
+            const hMap = data.reduce((a, b) => { a[b.hub] = (a[b.hub] || 0) + b.qtd; return a; }, {});
+            const hSorted = Object.entries(hMap).sort((a,b) => b[1]-a[1]).slice(0, 10);
+            render('chart-hubs', 'bar', hSorted.map(x=>x[0]), hSorted.map(x=>x[1]), '#EE4D2D');
+        }
 
-const tm={};d.forEach(x=>x.transp&&(tm[x.transp]=(tm[x.transp]||0)+x.qtd));
-const s=Object.entries(tm).sort((a,b)=>b[1]-a[1]);const top=s.slice(0,6);
-const oth=s.slice(6).reduce((a,b)=>a+b[1],0);if(oth)top.push(["OUTROS",oth]);
-charts.t=new Chart(chart-transp,{type:"doughnut",data:{labels:top.map(x=>x[0]),datasets:[{data:top.map(x=>x[1])}]}});
-}
+        function render(id, type, labels, data, color, axis = 'x') {
+            if (charts[id]) charts[id].destroy();
+            const ctx = document.getElementById(id).getContext('2d');
+            charts[id] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: color,
+                        borderColor: Array.isArray(color) ? '#fff' : color,
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        fill: type === 'line' ? 'origin' : false
+                    }]
+                },
+                options: {
+                    indexAxis: axis,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: type === 'doughnut' } },
+                    scales: type === 'doughnut' ? {} : {
+                        x: { grid: { display: false } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
 
-init();
-</script>
+        function resetFilters() {
+            document.querySelectorAll('select').forEach(s => s.value = "");
+            processAndUpdate();
+        }
+
+        init();
+    </script>
 </body>
 </html>
