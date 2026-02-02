@@ -3,27 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHOPEE EXPRESS | Logistics Tower</title>
+    <title>SHOPEE EXPRESS | Logistics Tower V17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #F4F7FA; font-family: 'Inter', sans-serif; }
-        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        body { background-color: #F1F5F9; font-family: 'Inter', sans-serif; }
+        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .shopee-bg { background-color: #EE4D2D; }
-        input, select { border: 1px solid #CBD5E1 !important; border-radius: 6px; padding: 4px 10px; font-weight: 700; font-size: 11px; }
+        select, input { border: 2px solid #CBD5E1 !important; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 11px; }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-900">
 
-    <header class="bg-[#001529] text-white p-4 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
-        <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+    <header class="bg-[#001529] text-white p-5 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
+        <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="shopee-bg p-2 rounded-lg">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                </div>
+                <div class="shopee-bg p-2 rounded-lg">🚀</div>
                 <div>
                     <h1 class="font-black text-xl italic uppercase tracking-tighter">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
                     <p class="text-[9px] font-bold text-slate-400 tracking-[0.2em]">LOGISTICS INTELLIGENCE TOWER</p>
@@ -31,52 +29,45 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 bg-slate-800/50 p-2 rounded-xl">
-                <div class="flex items-center gap-2 px-2 border-r border-slate-600">
-                    <span class="text-[10px] font-bold text-slate-400">FILTRAR PERÍODO:</span>
-                    <input type="date" id="d-start">
-                    <input type="date" id="d-end">
-                </div>
-                <select id="f-hub" class="min-w-[150px]"><option value="">HUBS: TODOS</option></select>
-                <select id="f-transp" class="min-w-[150px]"><option value="">3PL: TODAS</option></select>
-                <button onclick="location.reload()" class="shopee-bg text-white px-4 py-1.5 rounded-lg font-black text-[10px] uppercase">Reset</button>
+                <input type="date" id="d-start">
+                <input type="date" id="d-end">
+                <select id="f-hub"><option value="">HUBS: TODOS</option></select>
+                <select id="f-transp"><option value="">3PL: TODAS</option></select>
+                <button onclick="location.reload()" class="shopee-bg px-4 py-1.5 rounded font-black text-[10px] uppercase">Reset</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-[1600px] mx-auto p-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="dashboard-card p-5 border-l-8 border-blue-900 text-center text-blue-900">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Total de Veículos</p>
-                <span id="k-total" class="text-3xl font-black">0</span>
+            <div class="dashboard-card p-5 border-l-8 border-blue-900 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Total Veículos</p>
+                <span id="k-total" class="text-3xl font-black text-blue-900">0</span>
             </div>
-            <div class="dashboard-card p-5 border-l-8 border-[#EE4D2D] text-center">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Líder Transportes</p>
-                <span id="k-leader" class="text-lg font-black block truncate">--</span>
-            </div>
-            <div class="dashboard-card p-5 border-l-8 border-sky-400 text-center">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Perfil Predominante</p>
-                <span id="k-perfil" class="text-lg font-black block">--</span>
-            </div>
-            <div class="dashboard-card p-5 border-l-8 border-slate-400 text-center">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Última Atualização</p>
-                <span id="k-date" class="text-lg font-black block">--</span>
-            </div>
+            <div class="dashboard-card p-5 border-l-8 border-[#EE4D2D] text-center"><p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black block truncate">--</span></div>
+            <div class="dashboard-card p-5 border-l-8 border-sky-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Perfil Top</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
+            <div class="dashboard-card p-5 border-l-8 border-slate-400 text-center"><p class="text-[10px] font-black text-slate-400 uppercase">Ref. Base</p><span id="k-date" class="text-lg font-black block">--</span></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="dashboard-card p-6 lg:col-span-12">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest italic">Tendência de Operação (Volume Diário)</h4>
-                <div class="h-[250px]"><canvas id="c-line"></canvas></div>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Tendência de Operação (Volume Diário)</h4>
+                <div class="h-[300px]"><canvas id="c-line"></canvas></div>
             </div>
 
             <div class="dashboard-card p-6 lg:col-span-7">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest italic text-[#EE4D2D]">Quantidade por Transportadora</h4>
-                <div class="h-[400px]"><canvas id="c-bar"></canvas></div>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Quantidade de Veículos por Transportadora (Top 10)</h4>
+                <div class="h-[450px]"><canvas id="c-bar"></canvas></div>
             </div>
 
             <div class="dashboard-card p-6 lg:col-span-5">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest italic">Mix de Perfis de Veículos</h4>
-                <div class="h-[400px]"><canvas id="c-pie"></canvas></div>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Mix de Perfis de Veículos</h4>
+                <div class="h-[450px]"><canvas id="c-pie"></canvas></div>
+            </div>
+
+            <div class="dashboard-card p-6 lg:col-span-12">
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Comparativo de Frota por Hub</h4>
+                <div class="h-[350px]"><canvas id="c-hub"></canvas></div>
             </div>
         </div>
     </main>
@@ -85,98 +76,109 @@
         const CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
         Chart.register(ChartDataLabels);
         let db = [];
-        let charts = {};
+        let myCharts = {};
 
         async function init() {
-            const resp = await fetch(`${CSV}&t=${Date.now()}`);
-            const text = await resp.text();
-            const data = Papa.parse(text, {header:true, skipEmptyLines:true}).data;
+            const r = await fetch(`${CSV}&t=${Date.now()}`);
+            const t = await r.text();
+            const data = Papa.parse(t, {header:true, skipEmptyLines:true}).data;
 
             db = data.map(row => {
                 const dateRaw = row['DATA'];
-                const transpRaw = row['TRANSPORTADORA - 3PL'];
-                const qtdRaw = row['QUANTIDADE DE VEÍCULOS'];
-                
-                // Pula se for lixo da base ou erro
-                if(!dateRaw || dateRaw === 'Sem data' || !transpRaw || transpRaw === 'Sem data') return null;
+                if(!dateRaw || dateRaw === 'Sem data') return null;
 
                 return {
                     dateStr: dateRaw,
                     dateObj: parseDate(dateRaw),
                     hub: row['NOME HUB'] || row['HUB'] || 'N/D',
-                    transp: transpRaw.trim(),
-                    perfil: (row['PERFIL DO VEÍCULO'] || 'N/D').toUpperCase(),
-                    qtd: parseInt(String(qtdRaw).replace(/\D/g,'')) || 0
+                    transp: (row['TRANSPORTADORA - 3PL'] || 'N/D').trim(),
+                    perfil: (row['PERFIL DO VEÍCULO'] || 'N/D').toUpperCase().trim(),
+                    qtd: parseInt(String(row['QUANTIDADE DE VEÍCULOS'] || '0').replace(/\D/g,'')) || 0
                 };
-            }).filter(d => d && d.qtd > 0);
+            }).filter(d => d && d.qtd > 0 && d.transp !== 'Sem data');
 
-            // Ajusta o filtro para a última data real da base
             const dates = db.map(d => d.dateObj).filter(d => d);
-            const maxDate = new Date(Math.max(...dates));
-            const minDate = new Date(maxDate);
-            minDate.setDate(maxDate.getDate() - 7);
+            const maxD = new Date(Math.max(...dates));
+            const minD = new Date(maxD);
+            minD.setDate(maxD.getDate() - 7);
 
-            document.getElementById('d-start').value = minDate.toISOString().split('T')[0];
-            document.getElementById('d-end').value = maxDate.toISOString().split('T')[0];
+            document.getElementById('d-start').value = minD.toISOString().split('T')[0];
+            document.getElementById('d-end').value = maxD.toISOString().split('T')[0];
 
-            // Filtros
-            const fillSelect = (id, key) => {
+            const fill = (id, key) => {
                 const list = [...new Set(db.map(d => d[key]))].sort();
                 list.forEach(i => document.getElementById(id).innerHTML += `<option value="${i}">${i}</option>`);
             };
-            fillSelect('f-hub', 'hub');
-            fillSelect('f-transp', 'transp');
+            fill('f-hub', 'hub');
+            fill('f-transp', 'transp');
 
             render();
             document.querySelectorAll('input, select').forEach(el => el.onchange = render);
         }
 
         function render() {
-            const startV = new Date(document.getElementById('d-start').value);
-            const endV = new Date(document.getElementById('d-end').value);
-            const hubV = document.getElementById('f-hub').value;
-            const trV = document.getElementById('f-transp').value;
+            const sV = new Date(document.getElementById('d-start').value);
+            const eV = new Date(document.getElementById('d-end').value);
+            const hV = document.getElementById('f-hub').value;
+            const tV = document.getElementById('f-transp').value;
 
             const filtered = db.filter(d => 
-                d.dateObj >= startV && d.dateObj <= endV &&
-                (!hubV || d.hub === hubV) && (!trV || d.transp === trV)
+                d.dateObj >= sV && d.dateObj <= eV &&
+                (!hV || d.hub === hV) && (!tV || d.transp === tV)
             );
 
-            // KPIs
-            const total = filtered.reduce((s, b) => s + b.qtd, 0);
+            const total = filtered.reduce((a, b) => a + b.qtd, 0);
             document.getElementById('k-total').innerText = total.toLocaleString('pt-BR');
+            
             const trMap = group(filtered, 'transp');
-            document.getElementById('k-leader').innerText = Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             const pfMap = group(filtered, 'perfil');
+            const hbMap = group(filtered, 'hub');
+            const dtMap = group(filtered, 'dateStr');
+
+            document.getElementById('k-leader').innerText = Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-perfil').innerText = Object.entries(pfMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-date').innerText = document.getElementById('d-end').value.split('-').reverse().join('/');
 
-            // Charts
-            draw('c-line', 'line', group(filtered, 'dateStr'), { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)' });
-            draw('c-bar', 'bar', trMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true);
-            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981'] });
+            // Gráficos com ajustes de legenda e escala
+            draw('c-line', 'line', dtMap, { borderColor: '#001529', backgroundColor: 'rgba(0,21,41,0.05)', fill: true, tension: 0.3 });
+            draw('c-bar', 'bar', trMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true, 10);
+            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981','#8B5CF6'] });
+            draw('c-hub', 'bar', hbMap, { backgroundColor: '#001529' }, true, 15);
         }
 
-        function draw(id, type, dataMap, extra, sort = false) {
-            if(charts[id]) charts[id].destroy();
+        function draw(id, type, dataMap, extra, sort = false, limit = 0) {
+            if(myCharts[id]) myCharts[id].destroy();
             let entries = Object.entries(dataMap);
             if(sort) entries.sort((a,b) => b[1]-a[1]);
             if(id === 'c-line') entries.sort((a,b) => parseDate(a[0]) - parseDate(b[0]));
-            if(entries.length > 10 && id !== 'c-line') entries = entries.slice(0, 10);
+            if(limit > 0) entries = entries.slice(0, limit);
 
-            charts[id] = new Chart(document.getElementById(id), {
+            myCharts[id] = new Chart(document.getElementById(id), {
                 type: type,
-                data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 5 }] },
+                data: {
+                    labels: entries.map(x=>x[0]),
+                    datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 5 }]
+                },
                 options: {
                     responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 30, bottom: 10, right: 30 } },
                     plugins: {
-                        legend: { display: type === 'doughnut', position: 'bottom', labels: { boxWidth: 10, font: { weight: 'bold' } } },
+                        legend: { 
+                            display: type === 'doughnut', 
+                            position: 'right',
+                            labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } }
+                        },
                         datalabels: {
-                            color: '#000', font: { weight: 'bold', size: 10 }, anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
+                            color: '#000', font: { weight: 'bold', size: 10 },
+                            anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
+                            offset: 4,
                             formatter: (v) => v.toLocaleString('pt-BR')
                         }
                     },
-                    scales: type === 'doughnut' ? {} : { y: { display: false }, x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 } } } }
+                    scales: type === 'doughnut' ? {} : {
+                        y: { display: false, grace: '15%' },
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 } } }
+                    }
                 }
             });
         }
