@@ -1,230 +1,214 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics Intelligence | V5.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #F1F5F9; font-family: 'Inter', sans-serif; color: #1E293B; }
-        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .kpi-value { font-size: 2.6rem; font-weight: 900; color: #003366; line-height: 1; }
-        .filter-select { 
-            @apply bg-white text-slate-800 text-[12px] font-bold rounded-lg px-4 py-2 border border-slate-300 outline-none focus:ring-2 focus:ring-orange-500 shadow-sm;
-        }
-    </style>
+<meta charset="UTF-8" />
+<title>Dashboard de Frota</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+  --primary: #0b5ed7;
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  background: var(--primary);
+  color: #fff;
+  padding: 18px 28px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dashboard {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-gap: 24px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.card h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.full {
+  grid-column: span 2;
+}
+
+canvas {
+  width: 100% !important;
+  height: 320px !important;
+}
+.small canvas {
+  height: 260px !important;
+}
+</style>
 </head>
-<body class="antialiased">
 
-    <header class="bg-[#001529] text-white p-6 sticky top-0 z-50 border-b-4 border-orange-600">
-        <div class="max-w-[1600px] mx-auto flex flex-col lg:row justify-between items-center gap-6">
-            <div class="flex items-center gap-4">
-                <div class="bg-orange-600 p-2.5 rounded-xl">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                </div>
-                <div>
-                    <h1 class="font-black text-2xl tracking-tighter uppercase leading-none">COMMAND <span class="text-orange-500">CENTER</span></h1>
-                    <p class="text-[10px] text-slate-400 font-bold tracking-[.25em] mt-1 italic">STORYTELLING-DRIVEN ANALYTICS</p>
-                </div>
-            </div>
-            
-            <div class="flex flex-wrap items-center gap-4">
-                <select id="filter-hub" class="filter-select"><option value="">TODOS OS HUBS</option></select>
-                <select id="filter-ciclo" class="filter-select"><option value="">TODOS CICLOS</option></select>
-                <select id="filter-transp" class="filter-select"><option value="">TODAS 3PL</option></select>
-                <button onclick="resetFilters()" class="bg-slate-700 hover:bg-orange-600 text-white px-6 py-2 rounded-lg text-xs font-black transition-all">LIMPAR</button>
-            </div>
-        </div>
-    </header>
+<body>
 
-    <main class="max-w-[1600px] mx-auto p-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div class="dashboard-card p-6 bg-gradient-to-br from-white to-slate-50 border-l-8 border-blue-900">
-                <p class="text-[11px] font-black text-slate-400 uppercase mb-2">Total de Veículos</p>
-                <span id="kpi-total" class="kpi-value">0</span>
-            </div>
-            <div class="dashboard-card p-6 border-l-8 border-orange-500">
-                <p class="text-[11px] font-black text-slate-400 uppercase mb-2">3PL Líder</p>
-                <span id="kpi-leader" class="kpi-value text-2xl block truncate">--</span>
-            </div>
-            <div class="dashboard-card p-6 border-l-8 border-blue-400">
-                <p class="text-[11px] font-black text-slate-400 uppercase mb-2">Mix Principal</p>
-                <span id="kpi-modal" class="kpi-value text-2xl block">--</span>
-            </div>
-            <div class="dashboard-card p-6 border-l-8 border-slate-800">
-                <p class="text-[11px] font-black text-slate-400 uppercase mb-2">Data Referência</p>
-                <span id="kpi-date" class="kpi-value text-2xl block">--</span>
-            </div>
-        </div>
+<header>Dashboard de Frota</header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="dashboard-card p-8 lg:col-span-12">
-                <h4 class="font-black text-slate-800 text-sm mb-8 uppercase tracking-widest">Evolução Operacional (7 Dias)</h4>
-                <div class="h-[350px]"><canvas id="chart-evolution"></canvas></div>
-            </div>
+<section class="dashboard">
 
-            <div class="dashboard-card p-8 lg:col-span-7">
-                <h4 class="font-black text-slate-800 text-sm mb-8 uppercase tracking-widest">Concentração Market Share 3PL</h4>
-                <div class="h-[400px]"><canvas id="chart-market-share"></canvas></div>
-            </div>
+  <!-- EVOLUÇÃO -->
+  <div class="card full">
+    <h3>Evolução da Frota — Últimos 7 dias</h3>
+    <canvas id="evolucao"></canvas>
+  </div>
 
-            <div class="dashboard-card p-8 lg:col-span-5">
-                <h4 class="font-black text-slate-800 text-sm mb-8 uppercase tracking-widest">Mix de Perfis de Veículos</h4>
-                <div class="h-[400px]"><canvas id="chart-modal-dist"></canvas></div>
-            </div>
+  <!-- PERFIL -->
+  <div class="card small">
+    <h3>Volume por Perfil de Veículo</h3>
+    <canvas id="perfil"></canvas>
+  </div>
 
-            <div class="dashboard-card p-8 lg:col-span-12">
-                <h4 class="font-black text-slate-800 text-sm mb-8 uppercase tracking-widest">Top 15 Volume por Unidade</h4>
-                <div class="h-[450px]"><canvas id="chart-hub-volume"></canvas></div>
-            </div>
-        </div>
-    </main>
+  <!-- TOP -->
+  <div class="card small">
+    <h3>Top 5 Transportadoras</h3>
+    <canvas id="top"></canvas>
+  </div>
 
-    <script>
-        const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
-        Chart.register(ChartDataLabels);
-        let rawData = [];
-        let charts = {};
+  <!-- MODAL -->
+  <div class="card small">
+    <h3>Distribuição por Modal</h3>
+    <canvas id="modal"></canvas>
+  </div>
 
-        async function init() {
-            try {
-                const response = await fetch(`${SHEET_CSV}&t=${Date.now()}`);
-                const csvText = await response.text();
-                const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+  <!-- AM x DDP -->
+  <div class="card small">
+    <h3>AM x DDP</h3>
+    <canvas id="amddp"></canvas>
+  </div>
 
-                rawData = parsed.filter(r => {
-                    return r['DATA'] && !r['DATA'].includes('#') && r['QUANTIDADE DE VEÍCULOS'];
-                }).map(r => ({
-                    date: r['DATA'],
-                    ciclo: r['CICLO'] || 'N/D',
-                    hub: r['NOME HUB'] || r['HUB'],
-                    transp: r['TRANSPORTADORA - 3PL'],
-                    perfil: String(r['PERFIL DO VEÍCULO'] || '').trim().toUpperCase(),
-                    qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS']).replace(/\D/g, '')) || 0
-                }));
+</section>
 
-                populateFilters();
-                updateDashboard();
-            } catch (err) { console.error(err); }
-        }
+<script>
+/* =====================
+   DADOS (SUBSTITUÍVEIS)
+   ===================== */
 
-        function populateFilters() {
-            const getUnique = (key) => [...new Set(rawData.map(item => item[key]))].sort();
-            const fill = (id, items, label) => {
-                const el = document.getElementById(id);
-                el.innerHTML = `<option value="">TODOS (${label})</option>`;
-                items.forEach(i => { if(i) el.innerHTML += `<option value="${i}">${i}</option>`; });
-            };
-            fill('filter-hub', getUnique('hub'), 'HUBS');
-            fill('filter-ciclo', getUnique('ciclo'), 'CICLOS');
-            fill('filter-transp', getUnique('transp'), '3PL');
-            document.querySelectorAll('.filter-select').forEach(s => s.onchange = updateDashboard);
-        }
+const dias = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const evolucao = [120, 135, 128, 140, 150, 145, 160];
 
-        function updateDashboard() {
-            const fHub = document.getElementById('filter-hub').value;
-            const fCiclo = document.getElementById('filter-ciclo').value;
-            const fTransp = document.getElementById('filter-transp').value;
+const perfilLabels = ['Moto', 'VAN', '3/4', 'Toco', 'Truck'];
+const perfilData = [80, 120, 95, 60, 40];
 
-            const filtered = rawData.filter(d => 
-                (fHub === "" || d.hub === fHub) &&
-                (fCiclo === "" || d.ciclo === fCiclo) &&
-                (fTransp === "" || d.transp === fTransp)
-            );
+const topLabels = ['Transp A', 'Transp B', 'Transp C', 'Transp D', 'Transp E'];
+const topData = [220, 180, 150, 130, 110];
 
-            // KPIs
-            const total = filtered.reduce((a, b) => a + b.qtd, 0);
-            document.getElementById('kpi-total').innerText = total.toLocaleString('pt-BR');
-            const leader = Object.entries(groupBy(filtered, 'transp')).sort((a,b)=>b[1]-a[1])[0];
-            document.getElementById('kpi-leader').innerText = leader ? leader[0] : '--';
-            const modal = Object.entries(groupBy(filtered, 'perfil')).sort((a,b)=>b[1]-a[1])[0];
-            document.getElementById('kpi-modal').innerText = modal ? modal[0] : '--';
-            const dates = [...new Set(filtered.map(d => d.date))].sort();
-            document.getElementById('kpi-date').innerText = dates.length ? dates[dates.length-1] : '--';
+const modalLabels = ['Rodoviário', 'Urbano', 'Dedicado'];
+const modalData = [65, 25, 10];
 
-            renderCharts(filtered);
-        }
+const amddpLabels = ['AM', 'DDP'];
+const amddpData = [420, 310];
 
-        function renderCharts(data) {
-            // 1. Linha (Tendência) - Aumentando área e limpando grid
-            const daily = groupBy(data, 'date');
-            const sortedDates = Object.keys(daily).sort((a,b) => parseDate(a) - parseDate(b)).slice(-7);
-            renderChart('chart-evolution', 'line', sortedDates, sortedDates.map(d => daily[d]), { 
-                fill: true, 
-                borderColor: '#003366', 
-                backgroundColor: 'rgba(0,51,102,0.1)',
-                borderWidth: 4,
-                pointRadius: 6
-            });
+/* =====================
+   GRÁFICOS
+   ===================== */
 
-            // 2. Market Share (Corrigido e com respiro)
-            const transps = Object.entries(groupBy(data, 'transp')).sort((a,b)=>b[1]-a[1]).slice(0, 10);
-            renderChart('chart-market-share', 'bar', transps.map(x=>x[0]), transps.map(x=>x[1]), { 
-                indexAxis: 'y', 
-                backgroundColor: '#EE4D2D' 
-            });
+new Chart(evolucao, {
+  type: 'line',
+  data: {
+    labels: dias,
+    datasets: [{
+      data: evolucao,
+      borderColor: '#0b5ed7',
+      backgroundColor: 'rgba(11,94,215,0.12)',
+      fill: true,
+      tension: 0.35,
+      pointRadius: 3
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: { y: { grid: { color: '#eef1f6' } } }
+  }
+});
 
-            // 3. Mix Rosca (Centralizado)
-            const allowed = ['VUC', 'PASSEIO', 'MOTO', 'VAN', 'FIORINO', 'VAN/KOMBI', 'UTILITÁRIO'];
-            const modals = Object.entries(groupBy(data, 'perfil')).filter(x => allowed.includes(x[0])).sort((a,b)=>b[1]-a[1]);
-            renderChart('chart-modal-dist', 'doughnut', modals.map(x=>x[0]), modals.map(x=>x[1]), { 
-                backgroundColor: ['#003366','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981','#6366F1'],
-                cutout: '60%'
-            });
+new Chart(perfil, {
+  type: 'bar',
+  data: {
+    labels: perfilLabels,
+    datasets: [{
+      data: perfilData,
+      backgroundColor: '#198754'
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } }
+  }
+});
 
-            // 4. Hubs com Gradiente Shopee
-            const hubs = Object.entries(groupBy(data, 'hub')).sort((a,b)=>b[1]-a[1]).slice(0, 15);
-            const maxVol = hubs[0] ? hubs[0][1] : 1;
-            const hubColors = hubs.map(h => `rgba(0, 51, 102, ${0.3 + (h[1]/maxVol) * 0.7})`);
-            renderChart('chart-hub-volume', 'bar', hubs.map(x=>x[0]), hubs.map(x=>x[1]), { backgroundColor: hubColors });
-        }
+new Chart(top, {
+  type: 'bar',
+  data: {
+    labels: topLabels,
+    datasets: [{
+      data: topData,
+      backgroundColor: '#fd7e14'
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } }
+  }
+});
 
-        function renderChart(id, type, labels, values, extra) {
-            if(charts[id]) charts[id].destroy();
-            charts[id] = new Chart(document.getElementById(id), {
-                type: type,
-                data: { labels, datasets: [{ data: values, ...extra, borderRadius: 8 }] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: { padding: { top: 40, right: 40, left: 10, bottom: 10 } },
-                    plugins: {
-                        legend: { 
-                            display: (type === 'doughnut'), 
-                            position: 'right',
-                            labels: { font: { size: 11, weight: 'bold' }, boxWidth: 15 } 
-                        },
-                        datalabels: {
-                            color: '#1E293B',
-                            font: { weight: '900', size: 13 },
-                            anchor: 'end',
-                            align: (extra.indexAxis === 'y' ? 'right' : 'top'),
-                            offset: 5,
-                            formatter: (v) => v.toLocaleString('pt-BR'),
-                            display: (v) => v > 0
-                        }
-                    },
-                    scales: (type === 'doughnut') ? {} : {
-                        x: { grid: { display: false }, ticks: { font: { weight: '900', size: 11 } } },
-                        y: { display: false, grid: { display: false } } // Remove eixo Y e linhas cinzas
-                    }
-                }
-            });
-        }
+new Chart(modal, {
+  type: 'bar',
+  data: {
+    labels: modalLabels,
+    datasets: [{
+      data: modalData,
+      backgroundColor: ['#0d6efd', '#6f42c1', '#20c997']
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } }
+  }
+});
 
-        function groupBy(arr, key) {
-            return arr.reduce((acc, curr) => { 
-                if(curr[key]) acc[curr[key]] = (acc[curr[key]] || 0) + curr.qtd; 
-                return acc; 
-            }, {});
-        }
-        function parseDate(s) { const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); }
-        function resetFilters() { document.querySelectorAll('.filter-select').forEach(s => s.value = ""); updateDashboard(); }
-        init();
-    </script>
+new Chart(amddp, {
+  type: 'bar',
+  data: {
+    labels: amddpLabels,
+    datasets: [{
+      data: amddpData,
+      backgroundColor: ['#dc3545', '#0dcaf0']
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } }
+  }
+});
+</script>
+
 </body>
 </html>
