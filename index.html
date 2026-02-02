@@ -3,147 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopee Express | Logistics Tower</title>
+    <title>SHOPEE EXPRESS | Logistics Tower</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #F0F2F5; font-family: 'Inter', sans-serif; }
-        .card { background: white; border-radius: 12px; border: 1px solid #D1D5DB; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        body { background-color: #F1F5F9; font-family: 'Inter', sans-serif; }
+        .card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .shopee-bg { background-color: #EE4D2D; }
-        input, select { border: 2px solid #CBD5E1 !important; border-radius: 6px; padding: 4px; font-weight: bold; font-size: 12px; }
+        input, select { border: 2px solid #CBD5E1 !important; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 11px; }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-900">
 
-    <header class="bg-[#001529] text-white p-4 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
-        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <header class="bg-[#001529] text-white p-5 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
+        <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="shopee-bg p-2 rounded-lg shadow-md">
+                <div class="shopee-bg p-2 rounded-xl shadow-lg">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
                 </div>
                 <div>
                     <h1 class="font-black text-xl italic uppercase tracking-tighter">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
-                    <p class="text-[9px] font-bold text-slate-400 tracking-[0.3em]">LOGISTICS INTELLIGENCE TOWER</p>
+                    <p class="text-[9px] font-bold text-slate-400 tracking-[0.2em]">LOGISTICS INTELLIGENCE TOWER</p>
                 </div>
             </div>
             
             <div class="flex flex-wrap items-center gap-3 bg-slate-800 p-2 rounded-lg">
-                <div class="flex items-center gap-1">
-                    <span class="text-[10px] font-bold text-slate-400">DE:</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-slate-400">PERÍODO:</span>
                     <input type="date" id="d-start">
-                </div>
-                <div class="flex items-center gap-1">
-                    <span class="text-[10px] font-bold text-slate-400">ATÉ:</span>
                     <input type="date" id="d-end">
                 </div>
                 <select id="f-hub"><option value="">HUB: TODOS</option></select>
                 <select id="f-transp"><option value="">3PL: TODAS</option></select>
-                <button onclick="window.location.reload()" class="shopee-bg text-white px-4 py-1 rounded font-black text-[10px] uppercase">Reset</button>
+                <button onclick="location.reload()" class="shopee-bg px-4 py-1 rounded font-black text-[10px] uppercase hover:bg-orange-600 transition-all">Reset</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-[1600px] mx-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 text-center">
-            <div class="card p-4 border-l-8 border-blue-900"><p class="text-[10px] font-black text-slate-400 uppercase">Total Veículos</p><span id="k-total" class="text-3xl font-black text-blue-900">0</span></div>
-            <div class="card p-4 border-l-8 border-[#EE4D2D]"><p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black block truncate">--</span></div>
-            <div class="card p-4 border-l-8 border-sky-400"><p class="text-[10px] font-black text-slate-400 uppercase">Perfil Top</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
-            <div class="card p-4 border-l-8 border-slate-400"><p class="text-[10px] font-black text-slate-400 uppercase">Ref. Base</p><span id="k-date" class="text-lg font-black block">--</span></div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="card p-5 border-l-8 border-blue-900 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Total Veículos</p>
+                <span id="k-total" class="text-3xl font-black text-blue-900">0</span>
+            </div>
+            <div class="card p-5 border-l-8 border-[#EE4D2D] text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p>
+                <span id="k-leader" class="text-lg font-black block truncate text-slate-700">--</span>
+            </div>
+            <div class="card p-5 border-l-8 border-sky-400 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Modal Top</p>
+                <span id="k-perfil" class="text-lg font-black block text-slate-700">--</span>
+            </div>
+            <div class="card p-5 border-l-8 border-slate-400 text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Última Data</p>
+                <span id="k-date" class="text-lg font-black block text-slate-700">--</span>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="card p-6 lg:col-span-12">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Tendência de Operação (7 Dias)</h4>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest">Evolução Operacional (7 Dias)</h4>
                 <div class="h-[250px]"><canvas id="c-line"></canvas></div>
             </div>
             <div class="card p-6 lg:col-span-7">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">Quantidade por Transportadora (3PL)</h4>
-                <div class="h-[350px]"><canvas id="c-bar"></canvas></div>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest italic">Quantidade por Transportadora</h4>
+                <div class="h-[380px]"><canvas id="c-bar"></canvas></div>
             </div>
             <div class="card p-6 lg:col-span-5">
-                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">Mix de Perfis</h4>
-                <div class="h-[350px]"><canvas id="c-pie"></canvas></div>
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 tracking-widest italic">Mix de Perfis</h4>
+                <div class="h-[380px]"><canvas id="c-pie"></canvas></div>
             </div>
         </div>
     </main>
 
     <script>
-        const URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
         Chart.register(ChartDataLabels);
         let database = [];
         let myCharts = {};
 
-        async function start() {
-            const r = await fetch(`${URL}&cb=${Date.now()}`);
-            const t = await r.text();
-            const json = Papa.parse(t, {header:true, skipEmptyLines:true}).data;
+        async function init() {
+            try {
+                const response = await fetch(`${CSV_URL}&cache=${Date.now()}`);
+                const text = await response.text();
+                const json = Papa.parse(text, {header:true, skipEmptyLines:true}).data;
 
-            database = json.map(row => {
-                // Mapeamento ultra-flexível das colunas baseado no seu print
-                const q = Object.keys(row).find(k => k.includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
-                const tr = Object.keys(row).find(k => k.includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
-                const h = Object.keys(row).find(k => k.includes('NOME HUB')) || 'HUB';
-                
-                return {
-                    originalDate: row['DATA'],
-                    dateObj: parseDate(row['DATA']),
-                    hub: row[h] || 'N/D',
-                    transp: row[tr] || 'N/D',
-                    perfil: (row['PERFIL DO VEÍCULO'] || 'N/D').toUpperCase(),
-                    qtd: parseInt(String(row[q]).replace(/\D/g,'')) || 0
+                database = json.map(row => {
+                    // Ignora erro #VALUE! e usa DATA IMPORT se DATA estiver ruim
+                    let rawDate = row['DATA IMPORT'] || row['DATA'];
+                    if (!rawDate || rawDate.includes('#')) return null;
+
+                    const qKey = Object.keys(row).find(k => k.includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
+                    const tKey = Object.keys(row).find(k => k.includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
+                    const hKey = row['NOME HUB'] ? 'NOME HUB' : 'HUB';
+                    
+                    return {
+                        dateStr: rawDate.split(' ')[0], // Pega só a data se vier com texto
+                        dateObj: parseDate(rawDate.split(' ')[0]),
+                        hub: row[hKey] || 'N/D',
+                        transp: row[tKey] || 'N/D',
+                        perfil: (row['PERFIL DO VEÍCULO'] || 'N/D').toUpperCase(),
+                        qtd: parseInt(String(row[qKey]).replace(/\D/g,'')) || 0
+                    };
+                }).filter(d => d && d.dateObj && d.qtd > 0);
+
+                if(database.length === 0) {
+                    alert("Dados não encontrados! Verifique as colunas da planilha.");
+                    return;
+                }
+
+                const lastD = new Date(Math.max(...database.map(d => d.dateObj)));
+                const firstD = new Date(lastD);
+                firstD.setDate(lastD.getDate() - 7);
+
+                document.getElementById('d-start').value = firstD.toISOString().split('T')[0];
+                document.getElementById('d-end').value = lastD.toISOString().split('T')[0];
+
+                const fill = (id, key) => {
+                    const list = [...new Set(database.map(d => d[key]))].sort();
+                    list.forEach(i => document.getElementById(id).innerHTML += `<option value="${i}">${i}</option>`);
                 };
-            }).filter(d => d.dateObj && d.qtd > 0);
+                fill('f-hub', 'hub');
+                fill('f-transp', 'transp');
 
-            // Descobre a última data da planilha para não abrir vazio
-            const lastDate = new Date(Math.max(...database.map(d => d.dateObj)));
-            const firstDate = new Date(lastDate);
-            firstDate.setDate(lastDate.getDate() - 7);
-
-            document.getElementById('d-start').value = firstDate.toISOString().split('T')[0];
-            document.getElementById('d-end').value = lastDate.toISOString().split('T')[0];
-
-            // Preenche filtros
-            const fill = (id, key) => {
-                const list = [...new Set(database.map(d => d[key]))].sort();
-                list.forEach(i => document.getElementById(id).innerHTML += `<option value="${i}">${i}</option>`);
-            };
-            fill('f-hub', 'hub');
-            fill('f-transp', 'transp');
-
-            render();
-            document.querySelectorAll('input, select').forEach(el => el.onchange = render);
+                render();
+                document.querySelectorAll('input, select').forEach(el => el.onchange = render);
+            } catch (e) { console.error(e); }
         }
 
         function render() {
-            const startV = new Date(document.getElementById('d-start').value);
-            const endV = new Date(document.getElementById('d-end').value);
-            const hubV = document.getElementById('f-hub').value;
-            const transpV = document.getElementById('f-transp').value;
+            const sV = new Date(document.getElementById('d-start').value);
+            const eV = new Date(document.getElementById('d-end').value);
+            const hV = document.getElementById('f-hub').value;
+            const tV = document.getElementById('f-transp').value;
 
             const filtered = database.filter(d => 
-                d.dateObj >= startV && d.dateObj <= endV &&
-                (!hubV || d.hub === hubV) && (!transpV || d.transp === transpV)
+                d.dateObj >= sV && d.dateObj <= eV &&
+                (!hV || d.hub === hV) && (!tV || d.transp === tV)
             );
 
-            // KPIs
-            const total = filtered.reduce((a, b) => a + b.qtd, 0);
-            document.getElementById('k-total').innerText = total.toLocaleString('pt-BR');
-            
+            document.getElementById('k-total').innerText = filtered.reduce((a, b) => a + b.qtd, 0).toLocaleString('pt-BR');
             const trMap = group(filtered, 'transp');
-            const leader = Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0];
-            document.getElementById('k-leader').innerText = leader ? leader[0] : '--';
-            
+            document.getElementById('k-leader').innerText = Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             const pfMap = group(filtered, 'perfil');
             document.getElementById('k-perfil').innerText = Object.entries(pfMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
             document.getElementById('k-date').innerText = document.getElementById('d-end').value.split('-').reverse().join('/');
 
-            // Charts
-            draw('c-line', 'line', group(filtered, 'originalDate'), { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)' });
+            draw('c-line', 'line', group(filtered, 'dateStr'), { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)', tension: 0.4 });
             draw('c-bar', 'bar', trMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true);
-            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B'] });
+            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B','#10B981'] });
         }
 
         function draw(id, type, dataMap, extra, sort = false) {
@@ -155,24 +166,32 @@
 
             myCharts[id] = new Chart(document.getElementById(id), {
                 type: type,
-                data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra }] },
+                data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 6 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: type === 'doughnut', position: 'bottom' },
+                        legend: { display: type === 'doughnut', position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } },
                         datalabels: {
-                            color: '#000', font: { weight: 'bold', size: 10 }, anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
+                            color: '#000', font: { weight: '900', size: 10 },
+                            anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
                             formatter: (v) => v.toLocaleString('pt-BR')
                         }
                     },
-                    scales: type === 'doughnut' ? {} : { y: { display: false }, x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 } } } }
+                    scales: type === 'doughnut' ? {} : { 
+                        y: { display: false }, 
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 } } } 
+                    }
                 }
             });
         }
 
         function group(arr, key) { return arr.reduce((acc, c) => { acc[c[key]] = (acc[c[key]] || 0) + c.qtd; return acc; }, {}); }
-        function parseDate(s) { if(!s) return null; const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); }
-        start();
+        function parseDate(s) { 
+            if(!s || s.includes('#')) return null;
+            const p = s.split('/'); 
+            return new Date(p[2], p[1]-1, p[0]); 
+        }
+        init();
     </script>
 </body>
 </html>
