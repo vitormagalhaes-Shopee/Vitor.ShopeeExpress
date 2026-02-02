@@ -10,178 +10,169 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #F8FAFC; font-family: 'Inter', sans-serif; }
-        .dashboard-card { background: white; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .shopee-orange { color: #EE4D2D; }
-        .bg-shopee { background-color: #EE4D2D; }
-        select, input { border: 2px solid #CBD5E1 !important; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: bold; color: #000; }
+        body { background-color: #F0F2F5; font-family: 'Inter', sans-serif; }
+        .card { background: white; border-radius: 12px; border: 1px solid #D1D5DB; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .shopee-bg { background-color: #EE4D2D; }
+        input, select { border: 2px solid #CBD5E1 !important; border-radius: 6px; padding: 4px; font-weight: bold; font-size: 12px; }
     </style>
 </head>
-<body class="antialiased text-slate-900">
+<body class="text-slate-800">
 
-    <header class="bg-[#001529] text-white p-5 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
-        <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
+    <header class="bg-[#001529] text-white p-4 sticky top-0 z-[100] border-b-4 border-[#EE4D2D]">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-[#EE4D2D] p-2 rounded-lg">
+                <div class="shopee-bg p-2 rounded-lg shadow-md">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
                 </div>
                 <div>
-                    <h1 class="font-black text-xl tracking-tighter uppercase italic leading-none">SHOPEE <span class="shopee-orange">EXPRESS</span></h1>
-                    <p class="text-[9px] text-slate-400 font-bold tracking-[.2em]">LOGISTICS INTELLIGENCE TOWER</p>
+                    <h1 class="font-black text-xl italic uppercase tracking-tighter">SHOPEE <span class="text-[#EE4D2D]">EXPRESS</span></h1>
+                    <p class="text-[9px] font-bold text-slate-400 tracking-[0.3em]">LOGISTICS INTELLIGENCE TOWER</p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3">
-                <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-md">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Período:</span>
-                    <input type="date" id="date-start">
-                    <input type="date" id="date-end">
+            <div class="flex flex-wrap items-center gap-3 bg-slate-800 p-2 rounded-lg">
+                <div class="flex items-center gap-1">
+                    <span class="text-[10px] font-bold text-slate-400">DE:</span>
+                    <input type="date" id="d-start">
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-[10px] font-bold text-slate-400">ATÉ:</span>
+                    <input type="date" id="d-end">
                 </div>
                 <select id="f-hub"><option value="">HUB: TODOS</option></select>
-                <select id="f-ciclo"><option value="">CICLO: TODOS</option></select>
                 <select id="f-transp"><option value="">3PL: TODAS</option></select>
-                <button onclick="resetFilters()" class="bg-[#EE4D2D] text-white px-4 py-1.5 rounded font-black text-[10px] uppercase hover:bg-orange-600 transition-all">Reset</button>
+                <button onclick="window.location.reload()" class="shopee-bg text-white px-4 py-1 rounded font-black text-[10px] uppercase">Reset</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-[1600px] mx-auto p-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 text-center">
-            <div class="dashboard-card p-4 border-l-4 border-blue-900"><p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Total Veículos</p><span id="k-total" class="text-3xl font-black text-blue-900">0</span></div>
-            <div class="dashboard-card p-4 border-l-4 border-[#EE4D2D]"><p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Liderança 3PL</p><span id="k-leader" class="text-lg font-black block truncate">--</span></div>
-            <div class="dashboard-card p-4 border-l-4 border-sky-500"><p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Perfil Principal</p><span id="k-modal" class="text-lg font-black">--</span></div>
-            <div class="dashboard-card p-4 border-l-4 border-slate-400"><p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Data Referência</p><span id="k-date" class="text-lg font-black">--</span></div>
+            <div class="card p-4 border-l-8 border-blue-900"><p class="text-[10px] font-black text-slate-400 uppercase">Total Veículos</p><span id="k-total" class="text-3xl font-black text-blue-900">0</span></div>
+            <div class="card p-4 border-l-8 border-[#EE4D2D]"><p class="text-[10px] font-black text-slate-400 uppercase">3PL Líder</p><span id="k-leader" class="text-lg font-black block truncate">--</span></div>
+            <div class="card p-4 border-l-8 border-sky-400"><p class="text-[10px] font-black text-slate-400 uppercase">Perfil Top</p><span id="k-perfil" class="text-lg font-black block">--</span></div>
+            <div class="card p-4 border-l-8 border-slate-400"><p class="text-[10px] font-black text-slate-400 uppercase">Ref. Base</p><span id="k-date" class="text-lg font-black block">--</span></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="dashboard-card p-6 lg:col-span-12">
-                <h4 class="font-black text-xs uppercase text-slate-500 mb-4 tracking-widest">Evolução Operacional</h4>
-                <div class="h-[280px]"><canvas id="c-evolution"></canvas></div>
+            <div class="card p-6 lg:col-span-12">
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4">Tendência de Operação (7 Dias)</h4>
+                <div class="h-[250px]"><canvas id="c-line"></canvas></div>
             </div>
-
-            <div class="dashboard-card p-6 lg:col-span-7">
-                <h4 class="font-black text-xs uppercase text-slate-500 mb-4 tracking-widest">Quantidade de Veículos por Transportadora</h4>
-                <div class="h-[380px]"><canvas id="c-market"></canvas></div>
+            <div class="card p-6 lg:col-span-7">
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">Quantidade por Transportadora (3PL)</h4>
+                <div class="h-[350px]"><canvas id="c-bar"></canvas></div>
             </div>
-
-            <div class="dashboard-card p-6 lg:col-span-5">
-                <h4 class="font-black text-xs uppercase text-slate-500 mb-4 tracking-widest">Composição de Frota por Perfil</h4>
-                <div class="h-[380px]"><canvas id="c-perfil"></canvas></div>
+            <div class="card p-6 lg:col-span-5">
+                <h4 class="font-black text-xs text-slate-500 uppercase mb-4 italic">Mix de Perfis</h4>
+                <div class="h-[350px]"><canvas id="c-pie"></canvas></div>
             </div>
         </div>
     </main>
 
     <script>
-        const CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        const URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
         Chart.register(ChartDataLabels);
-        let dataStore = [];
-        let charts = {};
+        let database = [];
+        let myCharts = {};
 
-        async function init() {
-            const resp = await fetch(`${CSV}&t=${Date.now()}`);
-            const text = await resp.text();
-            const parsed = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
+        async function start() {
+            const r = await fetch(`${URL}&cb=${Date.now()}`);
+            const t = await r.text();
+            const json = Papa.parse(t, {header:true, skipEmptyLines:true}).data;
 
-            dataStore = parsed.map(r => {
-                const qKey = Object.keys(r).find(k => k.includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
-                const tKey = Object.keys(r).find(k => k.includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
+            database = json.map(row => {
+                // Mapeamento ultra-flexível das colunas baseado no seu print
+                const q = Object.keys(row).find(k => k.includes('QUANTIDADE')) || 'QUANTIDADE DE VEÍCULOS';
+                const tr = Object.keys(row).find(k => k.includes('TRANSPORTADORA')) || 'TRANSPORTADORA - 3PL';
+                const h = Object.keys(row).find(k => k.includes('NOME HUB')) || 'HUB';
+                
                 return {
-                    dateStr: r['DATA'],
-                    date: parseDate(r['DATA']),
-                    ciclo: r['CICLO'] || 'N/D',
-                    hub: r['NOME HUB'] || r['HUB'] || 'N/D',
-                    transp: String(r[tKey] || 'N/D').trim(),
-                    perfil: String(r['PERFIL DO VEÍCULO'] || 'N/D').trim().toUpperCase(),
-                    qtd: parseInt(String(r[qKey] || '0').replace(/\D/g, '')) || 0
+                    originalDate: row['DATA'],
+                    dateObj: parseDate(row['DATA']),
+                    hub: row[h] || 'N/D',
+                    transp: row[tr] || 'N/D',
+                    perfil: (row['PERFIL DO VEÍCULO'] || 'N/D').toUpperCase(),
+                    qtd: parseInt(String(row[q]).replace(/\D/g,'')) || 0
                 };
-            }).filter(d => d.date && d.qtd > 0);
+            }).filter(d => d.dateObj && d.qtd > 0);
 
-            // Ajuste Inteligente de Data: Pega a última data real da planilha
-            const maxD = new Date(Math.max(...dataStore.map(d => d.date)));
-            const minD = new Date(maxD);
-            minD.setDate(maxD.getDate() - 7);
+            // Descobre a última data da planilha para não abrir vazio
+            const lastDate = new Date(Math.max(...database.map(d => d.dateObj)));
+            const firstDate = new Date(lastDate);
+            firstDate.setDate(lastDate.getDate() - 7);
 
-            document.getElementById('date-start').value = minD.toISOString().split('T')[0];
-            document.getElementById('date-end').value = maxD.toISOString().split('T')[0];
+            document.getElementById('d-start').value = firstDate.toISOString().split('T')[0];
+            document.getElementById('d-end').value = lastDate.toISOString().split('T')[0];
 
-            populateFilters();
-            render();
-            document.querySelectorAll('select, input').forEach(el => el.onchange = render);
-        }
-
-        function populateFilters() {
-            const getU = (k) => [...new Set(dataStore.map(d => d[k]))].sort();
-            const fill = (id, list, lbl) => {
-                const el = document.getElementById(id);
-                el.innerHTML = `<option value="">${lbl}</option>`;
-                list.forEach(i => el.innerHTML += `<option value="${i}">${i}</option>`);
+            // Preenche filtros
+            const fill = (id, key) => {
+                const list = [...new Set(database.map(d => d[key]))].sort();
+                list.forEach(i => document.getElementById(id).innerHTML += `<option value="${i}">${i}</option>`);
             };
-            fill('f-hub', getU('hub'), 'HUB: TODOS');
-            fill('f-ciclo', getU('ciclo'), 'CICLO: TODOS');
-            fill('f-transp', getU('transp'), '3PL: TODAS');
+            fill('f-hub', 'hub');
+            fill('f-transp', 'transp');
+
+            render();
+            document.querySelectorAll('input, select').forEach(el => el.onchange = render);
         }
 
         function render() {
-            const dS = new Date(document.getElementById('date-start').value);
-            const dE = new Date(document.getElementById('date-end').value);
-            const fH = document.getElementById('f-hub').value;
-            const fC = document.getElementById('f-ciclo').value;
-            const fT = document.getElementById('f-transp').value;
+            const startV = new Date(document.getElementById('d-start').value);
+            const endV = new Date(document.getElementById('d-end').value);
+            const hubV = document.getElementById('f-hub').value;
+            const transpV = document.getElementById('f-transp').value;
 
-            const filtered = dataStore.filter(d => 
-                d.date >= dS && d.date <= dE &&
-                (!fH || d.hub === fH) && (!fC || d.ciclo === fC) && (!fT || d.transp === fT)
+            const filtered = database.filter(d => 
+                d.dateObj >= startV && d.dateObj <= endV &&
+                (!hubV || d.hub === hubV) && (!transpV || d.transp === transpV)
             );
 
             // KPIs
             const total = filtered.reduce((a, b) => a + b.qtd, 0);
             document.getElementById('k-total').innerText = total.toLocaleString('pt-BR');
             
-            const tMap = group(filtered, 'transp');
-            const leader = Object.entries(tMap).sort((a,b)=>b[1]-a[1])[0];
+            const trMap = group(filtered, 'transp');
+            const leader = Object.entries(trMap).sort((a,b)=>b[1]-a[1])[0];
             document.getElementById('k-leader').innerText = leader ? leader[0] : '--';
             
-            const pMap = group(filtered, 'perfil');
-            document.getElementById('k-modal').innerText = Object.entries(pMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
-            document.getElementById('k-date').innerText = document.getElementById('date-end').value.split('-').reverse().join('/');
+            const pfMap = group(filtered, 'perfil');
+            document.getElementById('k-perfil').innerText = Object.entries(pfMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '--';
+            document.getElementById('k-date').innerText = document.getElementById('d-end').value.split('-').reverse().join('/');
 
             // Charts
-            draw('c-evolution', 'line', group(filtered, 'dateStr'), { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)', tension: 0.4 });
-            draw('c-market', 'bar', tMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true);
-            draw('c-perfil', 'doughnut', pMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B'] });
+            draw('c-line', 'line', group(filtered, 'originalDate'), { borderColor: '#001529', fill: true, backgroundColor: 'rgba(0,21,41,0.05)' });
+            draw('c-bar', 'bar', trMap, { backgroundColor: '#EE4D2D', indexAxis: 'y' }, true);
+            draw('c-pie', 'doughnut', pfMap, { backgroundColor: ['#001529','#EE4D2D','#0EA5E9','#64748B','#F59E0B'] });
         }
 
-        function draw(id, type, dataMap, extra, limit = false) {
-            if(charts[id]) charts[id].destroy();
-            let entries = Object.entries(dataMap).sort((a,b) => limit ? b[1]-a[1] : 0);
-            if(limit) entries = entries.slice(0, 10);
-            if(id === 'c-evolution') entries.sort((a,b) => parseDate(a[0]) - parseDate(b[0]));
+        function draw(id, type, dataMap, extra, sort = false) {
+            if(myCharts[id]) myCharts[id].destroy();
+            let entries = Object.entries(dataMap);
+            if(sort) entries.sort((a,b) => b[1]-a[1]);
+            if(id === 'c-line') entries.sort((a,b) => parseDate(a[0]) - parseDate(b[0]));
+            if(sort && entries.length > 10) entries = entries.slice(0,10);
 
-            charts[id] = new Chart(document.getElementById(id), {
+            myCharts[id] = new Chart(document.getElementById(id), {
                 type: type,
-                data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra, borderRadius: 4 }] },
+                data: { labels: entries.map(x=>x[0]), datasets: [{ data: entries.map(x=>x[1]), ...extra }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: {
                         legend: { display: type === 'doughnut', position: 'bottom' },
                         datalabels: {
-                            color: '#000', font: { weight: '900', size: 10 },
-                            anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
+                            color: '#000', font: { weight: 'bold', size: 10 }, anchor: 'end', align: extra.indexAxis === 'y' ? 'right' : 'top',
                             formatter: (v) => v.toLocaleString('pt-BR')
                         }
                     },
-                    scales: type === 'doughnut' ? {} : { 
-                        y: { display: false }, 
-                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 } } } 
-                    }
+                    scales: type === 'doughnut' ? {} : { y: { display: false }, x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 } } } }
                 }
             });
         }
 
         function group(arr, key) { return arr.reduce((acc, c) => { acc[c[key]] = (acc[c[key]] || 0) + c.qtd; return acc; }, {}); }
         function parseDate(s) { if(!s) return null; const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); }
-        function resetFilters() { init(); }
-        init();
+        start();
     </script>
 </body>
 </html>
