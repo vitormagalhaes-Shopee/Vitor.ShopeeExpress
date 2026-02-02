@@ -1,272 +1,255 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Shopee Express | Ops Intelligence</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-body { font-family: Inter, sans-serif; background:#F7F9FC; }
-.card { background:#fff; border-radius:14px; border:1px solid #E5E7EB; box-shadow:0 4px 10px rgba(0,0,0,.04); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Center Express | Operações</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        :root { --brand-primary: #001529; --brand-accent: #EE4D2D; --bg-main: #F1F5F9; }
+        body { background-color: var(--bg-main); font-family: 'Inter', sans-serif; color: #1E293B; }
+        .dashboard-card { background: white; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .kpi-value { font-size: 2rem; font-weight: 800; color: #003366; line-height: 1; }
+        .filter-select { @apply text-[11px] font-bold bg-white border border-slate-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-orange-500; }
+        .loader { border-top-color: #EE4D2D; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
+<body class="antialiased">
 
-<body class="text-gray-800">
-
-<!-- HEADER -->
-<header class="bg-white border-b p-4 sticky top-0 z-50">
-  <div class="max-w-[1400px] mx-auto flex flex-wrap gap-3 justify-between items-center">
-    <h1 class="font-black text-lg">Shopee Express <span class="text-blue-600">| Ops Dashboard</span></h1>
-
-    <!-- FILTROS -->
-    <div class="flex flex-wrap gap-2">
-      <select id="f-hub" class="border px-3 py-2 rounded text-xs font-bold"></select>
-      <select id="f-ciclo" class="border px-3 py-2 rounded text-xs font-bold"></select>
-      <select id="f-transp" class="border px-3 py-2 rounded text-xs font-bold"></select>
-
-      <!-- FILTRO DATA (ETAPA 2) -->
-      <input type="date" id="f-date-start" class="border px-2 py-2 rounded text-xs font-bold">
-      <input type="date" id="f-date-end" class="border px-2 py-2 rounded text-xs font-bold">
-
-      <button onclick="resetFilters()" class="text-xs font-bold text-blue-600">Limpar</button>
+    <div id="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-50">
+        <div class="loader rounded-full border-4 border-slate-200 h-10 w-10 mb-4"></div>
+        <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Processando base de dados...</p>
     </div>
-  </div>
-</header>
 
-<main class="max-w-[1400px] mx-auto p-6 space-y-6">
+    <header class="bg-[#001529] text-white p-4 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-orange-600 rounded flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-md tracking-tighter uppercase leading-none">Control Center <span class="text-orange-500">Express</span></h1>
+                    <p class="text-[9px] text-slate-400 uppercase tracking-widest mt-1">Performance de Frota & Malha</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2">
+                <select id="filter-hub" class="filter-select text-slate-800"><option value="">HUBS: TODOS</option></select>
+                <select id="filter-ciclo" class="filter-select text-slate-800"><option value="">CICLOS: TODOS</option></select>
+                <select id="filter-transp" class="filter-select text-slate-800"><option value="">TRANSPORTADORAS: TODAS</option></select>
+                <button onclick="resetFilters()" class="px-3 py-1 text-[10px] font-bold bg-slate-700 hover:bg-slate-600 rounded transition-colors">LIMPAR</button>
+            </div>
+        </div>
+    </header>
 
-<!-- KPIs (ETAPA 3) -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-  <div class="card p-5 border-l-4 border-blue-600">
-    <p class="text-xs text-gray-400 uppercase">Total de Veículos</p>
-    <h2 id="kpi-total" class="text-3xl font-black">0</h2>
-  </div>
+    <main class="max-w-[1600px] mx-auto p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="dashboard-card p-5 border-t-4 border-blue-900">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Total de Veículos</p>
+                <span id="kpi-total" class="kpi-value">0</span>
+            </div>
+            <div class="dashboard-card p-5 border-t-4 border-orange-500">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Principal Parceiro</p>
+                <span id="kpi-leader" class="kpi-value text-xl truncate block">--</span>
+            </div>
+            <div class="dashboard-card p-5 border-t-4 border-slate-400">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Perfil Dominante</p>
+                <span id="kpi-modal" class="kpi-value text-xl block">--</span>
+            </div>
+            <div class="dashboard-card p-5 border-t-4 border-blue-400">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Última Atualização</p>
+                <span id="kpi-date" class="kpi-value text-xl block">--</span>
+            </div>
+        </div>
 
-  <div class="card p-5 border-l-4 border-blue-400">
-    <p class="text-xs text-gray-400 uppercase">Transportadora Líder</p>
-    <h2 id="kpi-transp" class="text-xl font-black">-</h2>
-  </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="dashboard-card p-6 lg:col-span-8">
+                <h4 class="font-bold text-slate-800 text-sm mb-6 uppercase tracking-tight">Tendência de Frota (Últimos 7 dias)</h4>
+                <div class="h-[300px]"><canvas id="chart-evolution"></canvas></div>
+            </div>
+            <div class="dashboard-card p-6 lg:col-span-4">
+                <h4 class="font-bold text-slate-800 text-sm mb-6 uppercase tracking-tight">Market Share 3PL</h4>
+                <div class="h-[300px]"><canvas id="chart-market-share"></canvas></div>
+            </div>
+            <div class="dashboard-card p-6 lg:col-span-4">
+                <h4 class="font-bold text-slate-800 text-sm mb-6 uppercase tracking-tight">Distribuição por Perfil</h4>
+                <div class="h-[350px]"><canvas id="chart-modal-dist"></canvas></div>
+            </div>
+            <div class="dashboard-card p-6 lg:col-span-8">
+                <h4 class="font-bold text-slate-800 text-sm mb-6 uppercase tracking-tight">Top 15 Hubs por Volume</h4>
+                <div class="h-[350px]"><canvas id="chart-hub-volume"></canvas></div>
+            </div>
+        </div>
+    </main>
 
-  <div class="card p-5 border-l-4 border-blue-300">
-    <p class="text-xs text-gray-400 uppercase">Modal Predominante</p>
-    <h2 id="kpi-modal" class="text-xl font-black">-</h2>
-  </div>
+    <script>
+        const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?gid=0&output=csv";
+        
+        let rawData = [];
+        let charts = {};
+        const colors = ['#003366', '#0EA5E9', '#EE4D2D', '#64748B', '#94A3B8', '#38BDF8', '#F97316'];
 
-  <div class="card p-5 border-l-4 border-blue-200">
-    <p class="text-xs text-gray-400 uppercase">Data Mais Recente</p>
-    <h2 id="kpi-date" class="text-xl font-black">-</h2>
-  </div>
-</div>
+        async function init() {
+            try {
+                const response = await fetch(`${SHEET_CSV}&cache=${Date.now()}`);
+                const csvText = await response.text();
+                
+                // Parse considerando exatamente os nomes das colunas da sua imagem
+                const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
 
-<!-- EVOLUÇÃO -->
-<div class="card p-6">
-  <h3 class="font-bold mb-3">Evolução Diária da Frota (7 dias)</h3>
-  <canvas id="chart-evolution" height="80"></canvas>
-</div>
+                // ETAPA 1: MAPEAMENTO CONFORME SUA IMAGEM
+                rawData = parsed.filter(r => {
+                    const hub = r['HUB'] || '';
+                    const transp = r['TRANSPORTADORA - 3PL'] || '';
+                    const qtd = r['QUANTIDADE DE VEÍCULOS'];
+                    // Remove lixo e valores inválidos
+                    return hub && !hub.includes('#') && transp && !transp.includes('#') && qtd;
+                }).map(r => ({
+                    date: r['DATA'],
+                    ciclo: r['CICLO'] || 'N/D',
+                    hub: r['NOME HUB'] || r['HUB'], // Usa "NOME HUB" se disponível
+                    transp: r['TRANSPORTADORA - 3PL'],
+                    perfil: String(r['PERFIL DO VEÍCULO'] || '').trim().toUpperCase(),
+                    qtd: parseInt(String(r['QUANTIDADE DE VEÍCULOS']).replace(/\D/g, '')) || 0
+                }));
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                populateFilters();
+                updateDashboard();
+                
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading').style.display = 'none', 500);
+            } catch (err) {
+                console.error("Erro na carga:", err);
+            }
+        }
 
-  <div class="card p-6">
-    <h3 class="font-bold mb-3">Volume por Perfil de Veículo</h3>
-    <canvas id="chart-perfil"></canvas>
-  </div>
+        function populateFilters() {
+            const getUnique = (key) => [...new Set(rawData.map(item => item[key]))].sort();
+            
+            const fill = (id, items, label) => {
+                const el = document.getElementById(id);
+                el.innerHTML = `<option value="">${label}: TODOS</option>`;
+                items.forEach(i => { if(i) el.innerHTML += `<option value="${i}">${i}</option>`; });
+            };
 
-  <div class="card p-6">
-    <h3 class="font-bold mb-3">Quantidade por Transportadora (Top 5)</h3>
-    <canvas id="chart-transp"></canvas>
-  </div>
+            fill('filter-hub', getUnique('hub'), 'HUBS');
+            fill('filter-ciclo', getUnique('ciclo'), 'CICLOS');
+            fill('filter-transp', getUnique('transp'), 'TRANSPORTADORAS');
 
-  <div class="card p-6">
-    <h3 class="font-bold mb-3">Distribuição por Modal</h3>
-    <canvas id="chart-modal"></canvas>
-  </div>
+            document.querySelectorAll('.filter-select').forEach(s => s.onchange = updateDashboard);
+        }
 
-  <div class="card p-6">
-    <h3 class="font-bold mb-3">Volume por Hub</h3>
-    <canvas id="chart-hub"></canvas>
-  </div>
+        function resetFilters() {
+            document.querySelectorAll('.filter-select').forEach(s => s.value = "");
+            updateDashboard();
+        }
 
-</div>
-</main>
+        function updateDashboard() {
+            const fHub = document.getElementById('filter-hub').value;
+            const fCiclo = document.getElementById('filter-ciclo').value;
+            const fTransp = document.getElementById('filter-transp').value;
 
-<script>
-/* ==============================
- ETAPA 1 — SANITIZAÇÃO DE DADOS
- Remove linhas inválidas (#REF, N/D, vazio)
-============================== */
+            const filtered = rawData.filter(d => 
+                (fHub === "" || d.hub === fHub) &&
+                (fCiclo === "" || d.ciclo === fCiclo) &&
+                (fTransp === "" || d.transp === fTransp)
+            );
 
-const SHEET =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?output=csv";
+            // KPIs
+            const total = filtered.reduce((a, b) => a + b.qtd, 0);
+            document.getElementById('kpi-total').innerText = total.toLocaleString('pt-BR');
+            
+            const leader = Object.entries(groupBy(filtered, 'transp')).sort((a,b)=>b[1]-a[1])[0];
+            document.getElementById('kpi-leader').innerText = leader ? leader[0] : '--';
 
-let raw = [], charts={};
+            const modal = Object.entries(groupBy(filtered, 'perfil')).sort((a,b)=>b[1]-a[1])[0];
+            document.getElementById('kpi-modal').innerText = modal ? modal[0] : '--';
 
-function isValid(v){
-  return v && v !== '#REF!' && v !== 'N/D';
-}
+            const dates = [...new Set(rawData.map(d => d.date))].sort();
+            document.getElementById('kpi-date').innerText = dates.length ? dates[dates.length-1] : '--';
 
-fetch(SHEET)
-.then(r=>r.text())
-.then(csv=>{
-  const data = Papa.parse(csv,{header:true}).data;
+            renderCharts(filtered);
+        }
 
-  raw = data
-    .map(r=>({
-      date: r['DATA'],
-      ciclo: r['CICLO (AM / DD)'],
-      hub: r['HUB'],
-      transp: r['TRANSPORTADORA'],
-      perfil: r['PERFIL DO VEÍCULO'],
-      qtd: Number(r['QUANTIDADE DE VEÍCULOS']) || 0
-    }))
-    .filter(r =>
-      isValid(r.date) &&
-      isValid(r.ciclo) &&
-      isValid(r.hub) &&
-      isValid(r.transp) &&
-      isValid(r.perfil)
-    );
+        function renderCharts(data) {
+            // Evolução (Últimos 7 dias)
+            const daily = groupBy(data, 'date');
+            const sortedDates = Object.keys(daily).sort((a,b) => parseDate(a) - parseDate(b)).slice(-7);
+            renderLine('chart-evolution', sortedDates, sortedDates.map(d => daily[d]));
 
-  initFilters();
-  update();
-});
+            // Market Share
+            const transps = Object.entries(groupBy(data, 'transp')).sort((a,b)=>b[1]-a[1]);
+            const top5 = transps.slice(0, 5);
+            if(transps.length > 5) {
+                const others = transps.slice(5).reduce((acc, curr) => acc + curr[1], 0);
+                top5.push(['OUTROS', others]);
+            }
+            renderDoughnut('chart-market-share', top5.map(x=>x[0]), top5.map(x=>x[1]));
 
-/* ==============================
- ETAPA 2 — FILTROS
-============================== */
-function initFilters(){
-  fill('f-hub','hub','TODOS HUBS');
-  fill('f-ciclo','ciclo','TODOS CICLOS');
-  fill('f-transp','transp','TODAS TRANSP');
+            // Perfis (Modais)
+            const validModals = ['VUC', 'PASSEIO', 'MOTO', 'VAN', 'FIORINO', 'VAN/KOMBI', 'UTILITÁRIO'];
+            const modals = Object.entries(groupBy(data, 'perfil'))
+                           .filter(x => validModals.includes(x[0]))
+                           .sort((a,b)=>b[1]-a[1]);
+            renderBar('chart-modal-dist', modals.map(x=>x[0]), modals.map(x=>x[1]), 'y');
 
-  document.querySelectorAll('select,input')
-    .forEach(el=>el.onchange=update);
-}
+            // Hubs
+            const hubs = Object.entries(groupBy(data, 'hub')).sort((a,b)=>b[1]-a[1]).slice(0, 15);
+            renderBar('chart-hub-volume', hubs.map(x=>x[0]), hubs.map(x=>x[1]), 'x');
+        }
 
-function fill(id,key,label){
-  const el=document.getElementById(id);
-  el.innerHTML=`<option value="">${label}</option>`;
-  [...new Set(raw.map(r=>r[key]))]
-    .sort().forEach(v=>{
-      el.innerHTML+=`<option>${v}</option>`;
-    });
-}
+        function groupBy(arr, key) {
+            return arr.reduce((acc, curr) => {
+                acc[curr[key]] = (acc[curr[key]] || 0) + curr.qtd;
+                return acc;
+            }, {});
+        }
 
-function resetFilters(){
-  document.querySelectorAll('select,input').forEach(e=>e.value="");
-  update();
-}
+        function parseDate(s) {
+            if(!s) return new Date(0);
+            const p = s.split('/');
+            return new Date(p[2], p[1]-1, p[0]);
+        }
 
-function getFiltered(){
-  const h=f('f-hub'), c=f('f-ciclo'), t=f('f-transp');
-  const d1=f('f-date-start'), d2=f('f-date-end');
+        function renderLine(id, labels, values) {
+            if(charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{ label: 'Veículos', data: values, borderColor: '#003366', backgroundColor: 'rgba(0,51,102,0.1)', fill: true, tension: 0.3, borderWidth: 3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
 
-  return raw.filter(r=>
-    (!h||r.hub===h) &&
-    (!c||r.ciclo===c) &&
-    (!t||r.transp===t) &&
-    (!d1||r.date>=d1) &&
-    (!d2||r.date<=d2)
-  );
-}
+        function renderBar(id, labels, values, axis) {
+            if(charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{ data: values, backgroundColor: axis === 'y' ? '#EE4D2D' : '#003366', borderRadius: 4 }]
+                },
+                options: { indexAxis: axis, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
 
-const f=id=>document.getElementById(id).value;
+        function renderDoughnut(id, labels, values) {
+            if(charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+            });
+        }
 
-/* ==============================
- ETAPA 3 — KPIs
-============================== */
-function updateKPIs(d){
-  const total = d.reduce((a,b)=>a+b.qtd,0);
-
-  const group=(k)=>Object.entries(
-    d.reduce((a,b)=>{a[b[k]]=(a[b[k]]||0)+b.qtd;return a;},{}))
-    .sort((a,b)=>b[1]-a[1])[0]?.[0]||'-';
-
-  document.getElementById('kpi-total').innerText=total.toLocaleString();
-  document.getElementById('kpi-transp').innerText=group('transp');
-  document.getElementById('kpi-modal').innerText=group('perfil');
-  document.getElementById('kpi-date').innerText=[...new Set(d.map(r=>r.date))].sort().pop();
-}
-
-/* ==============================
- ETAPA 4 — GRÁFICOS
-============================== */
-function update(){
-  const d=getFiltered();
-  updateKPIs(d);
-
-  renderLine('chart-evolution', last7(d));
-  renderBar('chart-perfil', group(d,'perfil',[
-    'VUC','PASSEIO','MOTO','VAN','FIORINO','VAN/KOMBI','UTILITÁRIO'
-  ]));
-
-  renderBar('chart-transp', topN(d,'transp',5));
-  renderDoughnut('chart-modal', group(d,'perfil'));
-  renderBar('chart-hub', topN(d,'hub',10));
-}
-
-function group(d,k,allow=null){
-  return Object.entries(
-    d.filter(r=>!allow||allow.includes(r[k]))
-     .reduce((a,b)=>{a[b[k]]=(a[b[k]]||0)+b.qtd;return a;},{}));
-}
-
-function topN(d,k,n){
-  return group(d,k).sort((a,b)=>b[1]-a[1]).slice(0,n);
-}
-
-function last7(d){
-  const m={};
-  d.forEach(r=>m[r.date]=(m[r.date]||0)+r.qtd);
-  return Object.entries(m).sort().slice(-7);
-}
-
-/* ==============================
- RENDERS (visual executivo, azul)
-============================== */
-function clear(id){ if(charts[id]) charts[id].destroy(); }
-
-function renderLine(id,data){
-  clear(id);
-  charts[id]=new Chart(document.getElementById(id),{
-    type:'line',
-    data:{labels:data.map(x=>x[0]),datasets:[{
-      data:data.map(x=>x[1]),
-      borderColor:'#2563EB',
-      backgroundColor:'rgba(37,99,235,.15)',
-      fill:true,tension:.4
-    }]},
-    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{display:false}}}}
-  });
-}
-
-function renderBar(id,data){
-  clear(id);
-  charts[id]=new Chart(document.getElementById(id),{
-    type:'bar',
-    data:{labels:data.map(x=>x[0]),datasets:[{
-      data:data.map(x=>x[1]),
-      backgroundColor:'#2563EB'
-    }]},
-    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{display:false}}}}
-  });
-}
-
-function renderDoughnut(id,data){
-  clear(id);
-  charts[id]=new Chart(document.getElementById(id),{
-    type:'doughnut',
-    data:{labels:data.map(x=>x[0]),datasets:[{
-      data:data.map(x=>x[1]),
-      backgroundColor:['#2563EB','#60A5FA','#93C5FD','#BFDBFE']
-    }]},
-    options:{cutout:'65%'}
-  });
-}
-</script>
+        init();
+        setInterval(init, 600000); // Atualiza a cada 10 min
+    </script>
 </body>
 </html>
