@@ -18,8 +18,8 @@
         .gradient-header { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #ee4d2d; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        canvas { min-height: 280px; }
-        .filter-input { @apply block w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all; }
+        canvas { min-height: 280px; max-height: 320px; }
+        .filter-input { @apply block w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all cursor-pointer hover:border-orange-300; }
     </style>
 </head>
 <body class="text-slate-900">
@@ -27,7 +27,7 @@
     <div id="loading" class="fixed inset-0 z-[60] flex items-center justify-center bg-white">
         <div class="text-center">
             <div class="loader mx-auto mb-4"></div>
-            <p class="text-sm font-bold tracking-widest text-gray-400 uppercase">Processando Big Data...</p>
+            <p class="text-sm font-bold tracking-widest text-gray-400 uppercase animate-pulse">Sincronizando Banco de Dados...</p>
         </div>
     </div>
 
@@ -38,124 +38,114 @@
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="#ee4d2d"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-extrabold tracking-tight">SHOPEE <span class="text-orange-500 font-light">EXPRESS</span></h1>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-[0.3em] font-bold">Fleet Operations Dashboard v2.0</p>
+                    <h1 class="text-2xl font-extrabold tracking-tight italic">SHOPEE <span class="text-orange-500 font-light not-italic">EXPRESS</span></h1>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-[0.3em] font-bold">Fleet Analytics Intelligence</p>
                 </div>
             </div>
-            <div class="flex items-center gap-6">
-                <div id="status-badge" class="flex items-center gap-2 bg-green-500/10 px-3 py-1.5 rounded-full border border-green-500/20">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-[11px] font-bold text-green-400 uppercase tracking-tighter" id="update-text">Sincronizado</span>
-                </div>
+            <div id="status-badge" class="flex items-center gap-2 bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="text-[11px] font-bold text-green-400 uppercase" id="update-text">Sistema Online</span>
             </div>
         </div>
     </header>
 
     <main class="max-w-[1600px] mx-auto p-6 space-y-8">
         
-        <section class="bg-white rounded-3xl p-6 card-shadow border border-gray-100">
+        <section class="bg-white rounded-3xl p-6 card-shadow border border-gray-100 border-t-4 border-t-orange-500">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Data de Operação</label>
-                    <select id="f-date" class="filter-input"><option value="all">Calendário Completo</option></select>
+                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">📅 Data Operacional</label>
+                    <select id="f-date" class="filter-input"><option value="all">Todo o período</option></select>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Unidade HUB</label>
-                    <select id="f-hub" class="filter-input"><option value="all">Todos os HUBs Ativos</option></select>
+                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">📍 Unidade HUB</label>
+                    <select id="f-hub" class="filter-input"><option value="all">Todos os HUBs</option></select>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Parceiro 3PL</label>
+                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">🚚 Parceiro 3PL</label>
                     <select id="f-carrier" class="filter-input"><option value="all">Todas as Transportadoras</option></select>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase ml-1">Categoria Veículo</label>
+                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">🚐 Perfil Frota</label>
                     <select id="f-profile" class="filter-input"><option value="all">Todos os Perfis</option></select>
                 </div>
             </div>
         </section>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-3xl border-b-4 border-orange-500 card-shadow relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 opacity-5 rotate-12"><i data-lucide="truck" size="80"></i></div>
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Capacidade Total</p>
+            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50 group hover:border-orange-500 transition-all">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Frota Consolidada</p>
                 <h3 id="kpi-total" class="text-4xl font-black text-slate-800">0</h3>
-                <span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded font-bold mt-2 inline-block">VEÍCULOS EM ROTA</span>
+                <div class="mt-2 flex items-center text-green-500 font-bold text-xs uppercase tracking-tighter">
+                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i> Dados Validados
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-3xl border-b-4 border-slate-800 card-shadow">
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Maior Fluxo HUB</p>
-                <h3 id="kpi-hub" class="text-lg font-bold text-slate-800 truncate">---</h3>
-                <p id="kpi-hub-val" class="text-xs text-slate-400 mt-1 font-semibold italic">---</p>
+            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">HUB em Destaque</p>
+                <h3 id="kpi-hub" class="text-lg font-black text-slate-800 truncate">---</h3>
+                <p id="kpi-hub-val" class="text-xs text-orange-600 font-bold mt-1 uppercase tracking-tighter">0 veículos</p>
             </div>
-            <div class="bg-white p-6 rounded-3xl border-b-4 border-slate-800 card-shadow">
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Market Share 3PL</p>
-                <h3 id="kpi-carrier" class="text-lg font-bold text-slate-800 truncate">---</h3>
-                <p id="kpi-carrier-val" class="text-xs text-slate-400 mt-1 font-semibold italic">---</p>
+            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Líder Transportes</p>
+                <h3 id="kpi-carrier" class="text-lg font-black text-slate-800 truncate">---</h3>
+                <p id="kpi-carrier-val" class="text-xs text-orange-600 font-bold mt-1 uppercase tracking-tighter">0 veículos</p>
             </div>
-            <div class="bg-white p-6 rounded-3xl border-b-4 border-orange-500 card-shadow">
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Hubs Ativos</p>
+            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Cobertura Geográfica</p>
                 <h3 id="kpi-active-hubs" class="text-4xl font-black text-slate-800">0</h3>
-                <span class="text-[10px] bg-green-100 text-green-600 px-2 py-0.5 rounded font-bold mt-2 inline-block">UNIDADES ONLINE</span>
+                <p class="text-[10px] text-gray-400 font-bold mt-1 uppercase">Hubs Operando</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-8 bg-white p-8 rounded-3xl card-shadow">
-                <div class="flex justify-between items-center mb-6">
-                    <h4 class="font-black text-slate-700 uppercase tracking-tighter">Evolução Diária da Frota</h4>
-                </div>
+                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6 flex items-center">
+                    <span class="w-2 h-6 bg-orange-500 mr-3 rounded-full"></span> Evolução Diária da Frota
+                </h4>
                 <canvas id="chartEvolucao"></canvas>
             </div>
             <div class="lg:col-span-4 bg-white p-8 rounded-3xl card-shadow">
-                <h4 class="font-black text-slate-700 mb-6 uppercase tracking-tighter">Top 5 Perfis de Veículo</h4>
+                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6">Top 5 Perfis de Veículo</h4>
                 <canvas id="chartPerfis"></canvas>
             </div>
             <div class="lg:col-span-6 bg-white p-8 rounded-3xl card-shadow">
-                <h4 class="font-black text-slate-700 mb-6 uppercase tracking-tighter">Performance por Transportadora</h4>
+                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6">Ranking de Transportadoras (3PL)</h4>
                 <canvas id="chartCarrier"></canvas>
             </div>
             <div class="lg:col-span-6 bg-white p-8 rounded-3xl card-shadow">
-                <h4 class="font-black text-slate-700 mb-6 uppercase tracking-tighter">Densidade por HUB (Ordenado)</h4>
+                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6">Fluxo por HUB (Decrescente)</h4>
                 <canvas id="chartHub"></canvas>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl card-shadow overflow-hidden border border-gray-100">
+        <div class="bg-white rounded-3xl card-shadow overflow-hidden border border-gray-100 mb-10">
             <div class="p-8 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                <h4 class="font-black text-slate-700 uppercase tracking-tighter italic italic">Detalhamento Técnico de Ativos</h4>
+                <h4 class="font-black text-slate-700 uppercase tracking-tighter italic">Detalhamento de Ativos Logísticos</h4>
                 <div class="relative w-full md:w-80">
                     <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
-                    <input type="text" id="mainSearch" placeholder="Pesquisar Hub ou Parceiro..." class="pl-10 filter-input w-full">
+                    <input type="text" id="mainSearch" placeholder="Filtrar tabela..." class="pl-10 filter-input w-full">
                 </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-slate-50 border-b border-gray-100 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                         <tr>
-                            <th class="px-8 py-5">Data Operação</th>
-                            <th class="px-8 py-5 text-orange-600">HUB Origin</th>
-                            <th class="px-8 py-5">Transportadora / 3PL</th>
-                            <th class="px-8 py-5">Perfil Veículo</th>
-                            <th class="px-8 py-5 text-right">Quantidade</th>
+                            <th class="px-8 py-5">Data</th>
+                            <th class="px-8 py-5">Unidade HUB</th>
+                            <th class="px-8 py-5">Transportadora</th>
+                            <th class="px-8 py-5">Perfil</th>
+                            <th class="px-8 py-5 text-right font-black">Quantidade</th>
                         </tr>
                     </thead>
-                    <tbody id="fleetTableBody" class="divide-y divide-gray-50 text-sm font-medium text-slate-600">
-                        </tbody>
+                    <tbody id="fleetTableBody" class="divide-y divide-gray-50 text-sm font-bold text-slate-600"></tbody>
                 </table>
             </div>
         </div>
     </main>
 
     <script>
-        // Configuração Global do Chart.js para exibir labels
+        // Registrar plugin de labels globalmente
         Chart.register(ChartDataLabels);
-        Chart.defaults.set('plugins.datalabels', {
-            color: '#1f2937',
-            anchor: 'end',
-            align: 'top',
-            offset: 4,
-            font: { weight: 'bold', size: 10 },
-            formatter: (val) => val.toLocaleString()
-        });
 
         const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?output=csv';
         
@@ -166,32 +156,47 @@
         async function init() {
             try {
                 const response = await fetch(SHEET_CSV);
+                if (!response.ok) throw new Error('Falha na resposta da rede');
                 const csv = await response.text();
-                db = parseData(csv);
-                filtered = [...db];
                 
+                db = parseData(csv);
+                if (db.length === 0) throw new Error('Dados vazios');
+                
+                filtered = [...db];
                 setupFilters();
                 renderAll();
-                document.getElementById('loading').style.display = 'none';
+                
+                document.getElementById('loading').classList.add('hidden');
                 lucide.createIcons();
             } catch (err) {
-                console.error("Critical Error:", err);
+                console.error("Erro Crítico:", err);
+                document.querySelector('#loading p').innerText = "Erro ao carregar dados. Verifique a planilha.";
             }
         }
 
+        // PARSER BLINDADO (Corrige o problema do load infinito)
         function parseData(csv) {
-            const rows = csv.split('\n').slice(1);
-            return rows.filter(r => r.length > 10).map(row => {
-                const cols = row.split(',');
-                return {
-                    data: cols[1]?.trim() || 'N/A',
-                    hub: cols[4]?.trim() || 'Desconhecido',
-                    carrier: cols[6]?.trim() || 'N/A',
-                    profile: cols[7]?.trim() || 'N/A',
-                    // A quantidade na planilha está na coluna 8 (index 8)
+            const lines = csv.split(/\r?\n/);
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                // Trata CSV que pode vir com vírgula ou ponto e vírgula
+                const delimiter = lines[i].includes(';') ? ';' : ',';
+                const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
+                
+                if (cols.length < 8) continue;
+
+                data.push({
+                    data: cols[1],
+                    hub: cols[4],
+                    carrier: cols[6],
+                    profile: cols[7],
                     qty: parseInt(cols[8]) || 0
-                };
-            });
+                });
+            }
+            return data;
         }
 
         function setupFilters() {
@@ -200,8 +205,7 @@
                 const select = document.getElementById(id);
                 items.forEach(i => {
                     const opt = document.createElement('option');
-                    opt.value = i;
-                    opt.textContent = i;
+                    opt.value = i; opt.textContent = i;
                     select.appendChild(opt);
                 });
                 select.addEventListener('change', runFilters);
@@ -215,19 +219,25 @@
         }
 
         function runFilters() {
-            const dVal = document.getElementById('f-date').value;
-            const hVal = document.getElementById('f-hub').value;
-            const cVal = document.getElementById('f-carrier').value;
-            const pVal = document.getElementById('f-profile').value;
+            const d = document.getElementById('f-date').value;
+            const h = document.getElementById('f-hub').value;
+            const c = document.getElementById('f-carrier').value;
+            const p = document.getElementById('f-profile').value;
 
-            filtered = db.filter(item => {
-                return (dVal === 'all' || item.data === dVal) &&
-                       (hVal === 'all' || item.hub === hVal) &&
-                       (cVal === 'all' || item.carrier === cVal) &&
-                       (pVal === 'all' || item.profile === pVal);
+            filtered = db.filter(i => {
+                return (d === 'all' || i.data === d) &&
+                       (h === 'all' || i.hub === h) &&
+                       (c === 'all' || i.carrier === c) &&
+                       (p === 'all' || i.profile === p);
             });
-
             renderAll();
+        }
+
+        function groupSum(data, key) {
+            return data.reduce((acc, curr) => {
+                acc[curr[key]] = (acc[curr[key]] || 0) + curr.qty;
+                return acc;
+            }, {});
         }
 
         function renderAll() {
@@ -243,114 +253,107 @@
             const total = filtered.reduce((acc, c) => acc + c.qty, 0);
             document.getElementById('kpi-total').innerText = total.toLocaleString();
 
-            const hubs = [...new Set(filtered.map(d => d.hub))];
-            document.getElementById('kpi-active-hubs').innerText = hubs.length;
-
             const grpHub = groupSum(filtered, 'hub');
-            const topHub = Object.entries(grpHub).sort((a,b) => b[1] - a[1])[0];
-            document.getElementById('kpi-hub').innerText = topHub ? topHub[0] : '---';
-            document.getElementById('kpi-hub-val').innerText = topHub ? `${topHub[1]} veículos` : '';
+            const topHub = Object.entries(grpHub).sort((a,b) => b[1] - a[1])[0] || ['---', 0];
+            document.getElementById('kpi-hub').innerText = topHub[0];
+            document.getElementById('kpi-hub-val').innerText = `${topHub[1]} veículos`;
 
-            const grp3pl = groupSum(filtered, 'carrier');
-            const top3pl = Object.entries(grp3pl).sort((a,b) => b[1] - a[1])[0];
-            document.getElementById('kpi-carrier').innerText = top3pl ? top3pl[0] : '---';
-            document.getElementById('kpi-carrier-val').innerText = top3pl ? `${top3pl[1]} veículos` : '';
+            const grpCarrier = groupSum(filtered, 'carrier');
+            const topCarrier = Object.entries(grpCarrier).sort((a,b) => b[1] - a[1])[0] || ['---', 0];
+            document.getElementById('kpi-carrier').innerText = topCarrier[0];
+            document.getElementById('kpi-carrier-val').innerText = `${topCarrier[1]} veículos`;
+
+            document.getElementById('kpi-active-hubs').innerText = [...new Set(filtered.map(d => d.hub))].length;
         }
 
-        function groupSum(data, key) {
-            return data.reduce((acc, curr) => {
-                acc[curr[key]] = (acc[curr[key]] || 0) + curr.qty;
-                return acc;
-            }, {});
-        }
-
-        function getChartConfig(id, type, labels, data, color, customOpts = {}) {
+        // GESTOR DE GRÁFICOS (Com suporte a Datalabels)
+        function createChart(id, type, labels, data, color, options = {}) {
             if (charts[id]) charts[id].destroy();
             const ctx = document.getElementById(id).getContext('2d');
             
-            const config = {
+            charts[id] = new Chart(ctx, {
                 type: type,
                 data: {
                     labels: labels,
                     datasets: [{
                         data: data,
                         backgroundColor: color,
-                        borderColor: Array.isArray(color) ? '#fff' : color,
+                        borderRadius: 6,
                         borderWidth: 0,
-                        borderRadius: type === 'bar' ? 8 : 0,
-                        fill: type === 'line',
-                        tension: 0.3
+                        tension: 0.3,
+                        fill: type === 'line'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: { padding: { top: 25 } },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: type === 'doughnut' },
+                        datalabels: {
+                            display: true,
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#1f2937',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: Math.round
+                        }
                     },
-                    scales: {
-                        y: { display: false, grid: { display: false } },
-                        x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } } }
+                    scales: type === 'doughnut' ? {} : {
+                        y: { display: false },
+                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } }
                     },
-                    ...customOpts
+                    ...options
                 }
-            };
-
-            if (type === 'doughnut') {
-                config.options.scales = {};
-                config.options.plugins.legend = { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } };
-                config.options.plugins.datalabels.align = 'center';
-                config.options.plugins.datalabels.color = '#fff';
-            }
-
-            charts[id] = new Chart(ctx, config);
+            });
         }
 
         function renderEvolucao() {
             const grp = groupSum(filtered, 'data');
-            const labels = Object.keys(grp);
-            const values = Object.values(grp);
-            getChartConfig('chartEvolucao', 'line', labels, values, '#ee4d2d');
+            createChart('chartEvolucao', 'line', Object.keys(grp), Object.values(grp), 'rgba(238, 77, 45, 0.1)', {
+                datasets: [{ 
+                    data: Object.values(grp), 
+                    borderColor: '#ee4d2d', 
+                    backgroundColor: 'rgba(238, 77, 45, 0.05)', 
+                    fill: true 
+                }]
+            });
         }
 
         function renderPerfis() {
             const grp = groupSum(filtered, 'profile');
-            // Ordenar e pegar TOP 5
             const sorted = Object.entries(grp).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            const colors = ['#ee4d2d', '#1f2937', '#ff7337', '#4b5563', '#9ca3af'];
-            getChartConfig('chartPerfis', 'doughnut', sorted.map(x => x[0]), sorted.map(x => x[1]), colors);
+            createChart('chartPerfis', 'doughnut', sorted.map(x => x[0]), sorted.map(x => x[1]), 
+                ['#ee4d2d', '#1f2937', '#ff7337', '#4b5563', '#9ca3af'], {
+                    plugins: { datalabels: { color: '#fff' } }
+                }
+            );
         }
 
         function renderCarrier() {
             const grp = groupSum(filtered, 'carrier');
             const sorted = Object.entries(grp).sort((a,b) => b[1] - a[1]);
-            getChartConfig('chartCarrier', 'bar', sorted.map(x => x[0]), sorted.map(x => x[1]), '#1f2937');
+            createChart('chartCarrier', 'bar', sorted.map(x => x[0]), sorted.map(x => x[1]), '#1f2937');
         }
 
         function renderHub() {
             const grp = groupSum(filtered, 'hub');
-            // Ordem do Maior para o Menor
+            // ORDENAÇÃO DO MAIOR PARA O MENOR
             const sorted = Object.entries(grp).sort((a,b) => b[1] - a[1]);
-            getChartConfig('chartHub', 'bar', sorted.map(x => x[0]), sorted.map(x => x[1]), '#ff7337');
+            createChart('chartHub', 'bar', sorted.map(x => x[0]), sorted.map(x => x[1]), '#ee4d2d');
         }
 
         function renderTable() {
-            const body = document.getElementById('fleetTableBody');
+            const tbody = document.getElementById('fleetTableBody');
             const search = document.getElementById('mainSearch').value.toLowerCase();
+            const rows = filtered.filter(f => f.hub.toLowerCase().includes(search) || f.carrier.toLowerCase().includes(search));
             
-            const rows = filtered.filter(f => 
-                f.hub.toLowerCase().includes(search) || 
-                f.carrier.toLowerCase().includes(search)
-            );
-
-            body.innerHTML = rows.map(r => `
-                <tr class="hover:bg-slate-50 transition-colors group">
-                    <td class="px-8 py-4 font-bold text-slate-400">${r.data}</td>
-                    <td class="px-8 py-4 font-black text-slate-700">${r.hub}</td>
-                    <td class="px-8 py-4 font-bold text-slate-500">${r.carrier}</td>
-                    <td class="px-8 py-4"><span class="bg-gray-100 text-[10px] px-2 py-1 rounded-md font-black uppercase text-gray-500 tracking-wider">${r.profile}</span></td>
-                    <td class="px-8 py-4 text-right font-black text-orange-600 text-base">${r.qty.toLocaleString()}</td>
+            tbody.innerHTML = rows.map(r => `
+                <tr class="hover:bg-orange-50/50 transition-colors">
+                    <td class="px-8 py-4 text-slate-400 text-xs">${r.data}</td>
+                    <td class="px-8 py-4 text-slate-800">${r.hub}</td>
+                    <td class="px-8 py-4">${r.carrier}</td>
+                    <td class="px-8 py-4"><span class="bg-slate-100 text-[10px] px-2 py-1 rounded uppercase">${r.profile}</span></td>
+                    <td class="px-8 py-4 text-right text-orange-600 font-black">${r.qty.toLocaleString()}</td>
                 </tr>
             `).join('');
         }
