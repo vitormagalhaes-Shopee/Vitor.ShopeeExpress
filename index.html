@@ -1,364 +1,538 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopee Express | Fleet Analytics Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f0f2f5; }
-        .shopee-orange { color: #ee4d2d; }
-        .bg-shopee-orange { background-color: #ee4d2d; }
-        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
-        .gradient-header { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #ee4d2d; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        canvas { min-height: 280px; max-height: 320px; }
-        .filter-input { @apply block w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all cursor-pointer hover:border-orange-300; }
-    </style>
-</head>
-<body class="text-slate-900">
+  <meta charset="UTF-8">
+  <title>Shopee LRJ-19 - Live Ops & Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700;800&family=JetBrains+Mono:wght@600;700;800&family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060911;
+      --card-bg: #0d1322;
+      --card-border: #1c2742;
+      --header-bg: #090e1a;
+      --text: #f8fafc;
+      --text-muted: #64748b;
+      --shopee: #ff5722;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --crit: #ef4444;
+      --blue: #38bdf8;
+      --purple: #8b5cf6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; padding: 16px; }
 
-    <div id="loading" class="fixed inset-0 z-[60] flex items-center justify-center bg-white">
-        <div class="text-center">
-            <div class="loader mx-auto mb-4"></div>
-            <p class="text-sm font-bold tracking-widest text-gray-400 uppercase animate-pulse">Sincronizando Banco de Dados...</p>
-        </div>
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; background: var(--header-bg); border: 1px solid var(--card-border); padding: 12px 20px; border-radius: 12px; margin-bottom: 16px; }
+    .hub-badge { font-family: 'Chakra Petch', sans-serif; background: var(--shopee); color: #fff; font-size: 1.15rem; font-weight: 800; padding: 6px 14px; border-radius: 6px; letter-spacing: 1px; }
+    .nav-tabs { display: flex; gap: 8px; }
+    .tab-btn { background: #131a2e; border: 1px solid #202b47; color: #94a3b8; padding: 9px 18px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.15s ease-out; }
+    .tab-btn.active { background: #1e293b; color: #38bdf8; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56,189,248,0.25); }
+    .clock-display { font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; font-weight: 800; color: #38bdf8; }
+
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    /* KPIs */
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; text-align: center; }
+    .kpi-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .kpi-val { font-family: 'Chakra Petch', sans-serif; font-size: 2rem; font-weight: 800; margin-top: 2px; }
+    .crit-txt { color: var(--crit); }
+    .blue-txt { color: var(--blue); }
+    .green-txt { color: var(--ok); }
+
+    /* Board Table */
+    .board-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: #080c14; padding: 12px 16px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--card-border); }
+    td { padding: 10px 16px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    
+    /* Correção de quebra da Rota */
+    .flight-gate {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fbbf24;
+      background: #1c1917;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      border: 1px solid #451a03;
+      white-space: nowrap;
+      min-width: 65px;
+      text-align: center;
+    }
+    .mono-time { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+    /* Tags Status */
+    .status-badge { font-family: 'Chakra Petch', sans-serif; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 5px; text-transform: uppercase; display: inline-flex; align-items: center; white-space: nowrap; }
+    .tag-ok { background: rgba(16,185,129,0.15); color: var(--ok); border: 1px solid var(--ok); }
+    .tag-warn { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid var(--warn); }
+    .tag-crit { background: rgba(239,68,68,0.25); color: var(--crit); border: 1px solid var(--crit); animation: beaconPulse 1.2s infinite alternate; }
+    @keyframes beaconPulse {
+      0% { box-shadow: 0 0 2px var(--crit); opacity: 0.85; }
+      100% { box-shadow: 0 0 14px var(--crit); opacity: 1; }
+    }
+
+    /* Analytics Layout */
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; background: var(--card-bg); border: 1px solid var(--card-border); padding: 10px 16px; border-radius: 10px; align-items: center; flex-wrap: wrap; }
+    .filter-select { background: #080c14; border: 1px solid #202b47; color: #f1f5f9; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; outline: none; }
+    
+    .analytics-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+
+    .chart-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px 20px; }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .chart-title { font-size: 0.8rem; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; }
+    .chart-badge { background: #1a233a; color: var(--blue); font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+    .canvas-holder { position: relative; width: 100%; height: 240px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="hub-badge">HUB LRJ-19</div>
+      <div class="nav-tabs">
+        <button id="tab-btn-ops" class="tab-btn active" onclick="setTab('ops')">✈️ MONITOR OPERACIONAL (TV)</button>
+        <button id="tab-btn-analytics" class="tab-btn" onclick="setTab('analytics')">📊 DASHBOARD EXECUTIVO & ANÁLISES</button>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div class="clock-display" id="clock-txt">--:--:--</div>
+      <button id="btn-audio" class="tab-btn" onclick="toggleAudio()">🔊 Alerta Sonoro</button>
+    </div>
+  </header>
+
+  <!-- ABA 1: OPERACIONAL -->
+  <div id="panel-ops" class="view-panel active">
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Carros Carregando (Pátio Hoje)</div>
+        <div class="kpi-val" id="kpi-patio-count">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Média TMC (Pátio Hoje)</div>
+        <div class="kpi-val" id="kpi-patio-avg">00:00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Alertas Críticos (> 10M)</div>
+        <div class="kpi-val crit-txt" id="kpi-patio-crit">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Carros Carregados / Hora</div>
+        <div class="kpi-val blue-txt" id="kpi-flow-rate">0.0 /h</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Finalizados Hoje / Início Rota</div>
+        <div class="kpi-val" id="kpi-today-summary" style="font-size: 1.4rem; padding-top: 4px;">0 rotas | --:--</div>
+      </div>
     </div>
 
-    <header class="gradient-header text-white py-6 px-8 sticky top-0 z-50 shadow-xl border-b-2 border-orange-600">
-        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div class="bg-white p-2.5 rounded-2xl shadow-inner rotate-3">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="#ee4d2d"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-extrabold tracking-tight italic">SHOPEE <span class="text-orange-500 font-light not-italic">EXPRESS</span></h1>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-[0.3em] font-bold">Fleet Analytics Intelligence</p>
-                </div>
-            </div>
-            <div id="status-badge" class="flex items-center gap-2 bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
-                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span class="text-[11px] font-bold text-green-400 uppercase" id="update-text">Sistema Online</span>
-            </div>
-        </div>
-    </header>
+    <div class="board-box">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 100px;">Rota</th>
+            <th>Motorista</th>
+            <th>Modal</th>
+            <th>Transportadora</th>
+            <th>Horário Subida de Rota</th>
+            <th>Tempo no Carro (TMC)</th>
+            <th style="text-align: right;">Status Operacional</th>
+          </tr>
+        </thead>
+        <tbody id="ops-table-body">
+          <tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 30px;">Carregando operação...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-    <main class="max-w-[1600px] mx-auto p-6 space-y-8">
+  <!-- ABA 2: GERENCIAL -->
+  <div id="panel-analytics" class="view-panel">
+    <div class="filter-bar">
+      <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">🔍 Filtros:</span>
+      <select id="filtro-data" class="filter-select" onchange="runAnalytics()"><option value="ALL">Todas as Datas</option></select>
+      <select id="filtro-modal" class="filter-select" onchange="runAnalytics()"><option value="ALL">Todos os Modais</option></select>
+      <select id="filtro-transp" class="filter-select" onchange="runAnalytics()"><option value="ALL">Todas as Transportadoras</option></select>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Carros Filtrados</div>
+        <div class="kpi-val blue-txt" id="mgr-kpi-total">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">TMC Médio Consolidado</div>
+        <div class="kpi-val" id="mgr-kpi-tmc">0.0 min</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Aderência SLA (&lt; 10 min)</div>
+        <div class="kpi-val green-txt" id="mgr-kpi-sla">0.0%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Modal Mais Rápido</div>
+        <div class="kpi-val" id="mgr-kpi-fastest" style="font-size: 1.4rem; padding-top: 6px; color: #fbbf24;">--</div>
+      </div>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="chart-card col-4">
+        <div class="chart-header"><div class="chart-title">Distribuição de SLA</div><span class="chart-badge">Volume</span></div>
+        <div class="canvas-holder"><canvas id="chartFaixas"></canvas></div>
+      </div>
+      <div class="chart-card col-8">
+        <div class="chart-header"><div class="chart-title">Carros Finalizados por Horário</div><span class="chart-badge">Volume / Hora</span></div>
+        <div class="canvas-holder"><canvas id="chartHoras"></canvas></div>
+      </div>
+      <div class="chart-card col-6">
+        <div class="chart-header"><div class="chart-title">TMC Médio por Modal (Minutos)</div><span class="chart-badge">Agilidade</span></div>
+        <div class="canvas-holder"><canvas id="chartModal"></canvas></div>
+      </div>
+      <div class="chart-card col-6">
+        <div class="chart-header"><div class="chart-title">TMC Médio por Transportadora</div><span class="chart-badge">Performance</span></div>
+        <div class="canvas-holder"><canvas id="chartTransp"></canvas></div>
+      </div>
+      <div class="chart-card col-12">
+        <div class="chart-header"><div class="chart-title">Top 8 Motoristas com Maior TMC Médio (Mais Demorados)</div><span class="chart-badge">Ofensores</span></div>
+        <div class="canvas-holder" style="height: 220px;"><canvas id="chartDrivers"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbwO9YxzWqLNQeR6o_5c6s6JB6Q5a_cUMLss6x_dbp10si9szgFJXJZfDR81fAsvYME/exec";
+
+    let dataset = [];
+    let audioCtx = null, audioActive = false;
+    let activeTab = 'ops';
+    let charts = {};
+
+    // Função de limpeza e padronização dos modais
+    function cleanModal(m) {
+      if (!m) return "OUTROS";
+      const u = String(m).toUpperCase().trim();
+      if (u.includes("PASSEIO")) return "PASSEIO";
+      if (u.includes("FIORINO")) return "FIORINO";
+      if (u.includes("MOTO")) return "MOTO";
+      if (u.includes("VAN")) return "VAN";
+      if (u.includes("VUC")) return "VUC";
+      return u;
+    }
+
+    function setTab(tab) {
+      activeTab = tab;
+      document.getElementById("tab-btn-ops").classList.toggle("active", tab === 'ops');
+      document.getElementById("tab-btn-analytics").classList.toggle("active", tab === 'analytics');
+      document.getElementById("panel-ops").classList.toggle("active", tab === 'ops');
+      document.getElementById("panel-analytics").classList.toggle("active", tab === 'analytics');
+      if (tab === 'analytics') runAnalytics();
+      else renderOps();
+    }
+
+    function toggleAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioActive = !audioActive;
+      const b = document.getElementById("btn-audio");
+      b.innerText = audioActive ? "🔊 Som Ligado" : "🔇 Som Desligado";
+      b.style.borderColor = audioActive ? "#10b981" : "#202b47";
+    }
+
+    function soundBeep() {
+      if (!audioActive) return;
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function parseSec(t) {
+      if (!t) return null;
+      const m = String(t).trim().match(/(\d{2}):(\d{2})(?::(\d{2}))?/);
+      return m ? parseInt(m[1], 10) * 3600 + parseInt(m[2], 10) * 60 + (m[3] ? parseInt(m[3], 10) : 0) : null;
+    }
+
+    function fmtMinSec(sec) {
+      const m = Math.floor(sec / 60), s = sec % 60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function getNowSec() {
+      const n = new Date();
+      return n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds();
+    }
+
+    async function fetchApiData() {
+      try {
+        const res = await fetch(API_URL);
+        const raw = await res.json();
         
-        <section class="bg-white rounded-3xl p-6 card-shadow border border-gray-100 border-t-4 border-t-orange-500">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="space-y-2">
-                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">📅 Data Operacional</label>
-                    <select id="f-date" class="filter-input"><option value="all">Todo o período</option></select>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">📍 Unidade HUB</label>
-                    <select id="f-hub" class="filter-input"><option value="all">Todos os HUBs</option></select>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">🚚 Parceiro 3PL</label>
-                    <select id="f-carrier" class="filter-input"><option value="all">Todas as Transportadoras</option></select>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-[11px] font-black text-slate-500 uppercase ml-1">🚐 Perfil Frota</label>
-                    <select id="f-profile" class="filter-input"><option value="all">Todos os Perfis</option></select>
-                </div>
-            </div>
-        </section>
+        // Padroniza modais na base recebida
+        dataset = raw.map(d => ({
+          ...d,
+          modal: cleanModal(d.modal)
+        }));
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50 group hover:border-orange-500 transition-all">
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Frota Consolidada</p>
-                <h3 id="kpi-total" class="text-4xl font-black text-slate-800">0</h3>
-                <div class="mt-2 flex items-center text-green-500 font-bold text-xs uppercase tracking-tighter">
-                    <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i> Dados Validados
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50">
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">HUB em Destaque</p>
-                <h3 id="kpi-hub" class="text-lg font-black text-slate-800 truncate">---</h3>
-                <p id="kpi-hub-val" class="text-xs text-orange-600 font-bold mt-1 uppercase tracking-tighter">0 veículos</p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50">
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Líder Transportes</p>
-                <h3 id="kpi-carrier" class="text-lg font-black text-slate-800 truncate">---</h3>
-                <p id="kpi-carrier-val" class="text-xs text-orange-600 font-bold mt-1 uppercase tracking-tighter">0 veículos</p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl card-shadow border border-gray-50">
-                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Cobertura Geográfica</p>
-                <h3 id="kpi-active-hubs" class="text-4xl font-black text-slate-800">0</h3>
-                <p class="text-[10px] text-gray-400 font-bold mt-1 uppercase">Hubs Operando</p>
-            </div>
-        </div>
+        buildFilters();
+        if (activeTab === 'ops') renderOps();
+        else runAnalytics();
+      } catch (err) {
+        console.warn("Sincronizando...", err);
+      }
+    }
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-8 bg-white p-8 rounded-3xl card-shadow">
-                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6 flex items-center">
-                    <span class="w-2 h-6 bg-orange-500 mr-3 rounded-full"></span> Evolução Diária da Frota
-                </h4>
-                <canvas id="chartEvolucao"></canvas>
-            </div>
-            <div class="lg:col-span-4 bg-white p-8 rounded-3xl card-shadow">
-                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6">Top 5 Perfis de Veículo</h4>
-                <canvas id="chartPerfis"></canvas>
-            </div>
-            <div class="lg:col-span-6 bg-white p-8 rounded-3xl card-shadow">
-                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6">Ranking de Transportadoras (3PL)</h4>
-                <canvas id="chartCarrier"></canvas>
-            </div>
-            <div class="lg:col-span-6 bg-white p-8 rounded-3xl card-shadow">
-                <h4 class="font-black text-slate-700 uppercase tracking-tighter mb-6">Fluxo por HUB (Decrescente)</h4>
-                <canvas id="chartHub"></canvas>
-            </div>
-        </div>
+    function renderOps() {
+      const now = getNowSec();
+      const allDates = [...new Set(dataset.map(d => d.data).filter(Boolean))];
+      const targetDate = allDates[allDates.length - 1];
 
-        <div class="bg-white rounded-3xl card-shadow overflow-hidden border border-gray-100 mb-10">
-            <div class="p-8 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                <h4 class="font-black text-slate-700 uppercase tracking-tighter italic">Detalhamento de Ativos Logísticos</h4>
-                <div class="relative w-full md:w-80">
-                    <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400 w-4 h-4"></i>
-                    <input type="text" id="mainSearch" placeholder="Filtrar tabela..." class="pl-10 filter-input w-full">
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 border-b border-gray-100 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                        <tr>
-                            <th class="px-8 py-5">Data</th>
-                            <th class="px-8 py-5">Unidade HUB</th>
-                            <th class="px-8 py-5">Transportadora</th>
-                            <th class="px-8 py-5">Perfil</th>
-                            <th class="px-8 py-5 text-right font-black">Quantidade</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fleetTableBody" class="divide-y divide-gray-50 text-sm font-bold text-slate-600"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+      const patio = [];
+      let totalSec = 0, critCount = 0, finishedCount = 0;
+      let firstStart = null, lastEnd = null;
 
-    <script>
-        // Registrar plugin de labels globalmente
-        Chart.register(ChartDataLabels);
+      dataset.forEach(d => {
+        if (d.data !== targetDate) return;
+        const ti = parseSec(d.validationTi);
+        const ei = parseSec(d.validationEi);
 
-        const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT4QgrRy659Pt4wBgeT987bFhfwSjnESxNSHJ-OWOZ_yxEu8mWmvWYdUH5Y-4EjowJspxOv9b4gkSB0/pub?output=csv';
+        if (ti !== null) firstStart = (firstStart === null || ti < firstStart) ? ti : firstStart;
+        if (d.isFinalizado) finishedCount++;
+
+        if (ei !== null) {
+          lastEnd = (lastEnd === null || ei > lastEnd) ? ei : lastEnd;
+          if (!d.isFinalizado) {
+            const elap = Math.max(0, now - ei);
+            patio.push({ ...d, elap });
+            totalSec += elap;
+            if (elap >= 600) critCount++; // Crítico >= 10 minutos (600s)
+          }
+        }
+      });
+
+      document.getElementById("kpi-patio-count").innerText = patio.length;
+      document.getElementById("kpi-patio-crit").innerText = critCount;
+      document.getElementById("kpi-patio-avg").innerText = patio.length ? fmtMinSec(Math.round(totalSec / patio.length)) : "00:00";
+
+      if (firstStart !== null && lastEnd !== null && lastEnd > firstStart) {
+        const spanH = (lastEnd - firstStart) / 3600;
+        document.getElementById("kpi-flow-rate").innerText = `${(finishedCount / spanH).toFixed(1)} /h`;
+        const tiStr = `${String(Math.floor(firstStart / 3600)).padStart(2,'0')}:${String(Math.floor((firstStart % 3600)/60)).padStart(2,'0')}`;
+        document.getElementById("kpi-today-summary").innerText = `${finishedCount} rotas | ${tiStr}`;
+      } else {
+        document.getElementById("kpi-flow-rate").innerText = `0.0 /h`;
+        document.getElementById("kpi-today-summary").innerText = `${finishedCount} rotas | --:--`;
+      }
+
+      patio.sort((a, b) => b.elap - a.elap);
+
+      const tb = document.getElementById("ops-table-body");
+      if (!patio.length) {
+        tb.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 30px;">Pátio livre no momento. Nenhum carro carregando.</td></tr>`;
+        return;
+      }
+
+      let html = "";
+      patio.forEach(car => {
+        const mins = car.elap / 60;
         
-        let db = [];
-        let filtered = [];
-        let charts = {};
+        // Novo SLA: Crítico > 10m | Atenção 7-10m | Regular < 7m
+        let badge = mins >= 10 ? `<span class="status-badge tag-crit">🔴 CRÍTICO (>10M)</span>` :
+                    mins >= 7  ? `<span class="status-badge tag-warn">🟡 ATENÇÃO (7-10M)</span>` :
+                                 `<span class="status-badge tag-ok">🟢 REGULAR (&lt;7M)</span>`;
 
-        async function init() {
-            try {
-                const response = await fetch(SHEET_CSV);
-                if (!response.ok) throw new Error('Falha na resposta da rede');
-                const csv = await response.text();
-                
-                db = parseData(csv);
-                if (db.length === 0) throw new Error('Dados vazios');
-                
-                filtered = [...db];
-                setupFilters();
-                renderAll();
-                
-                document.getElementById('loading').classList.add('hidden');
-                lucide.createIcons();
-            } catch (err) {
-                console.error("Erro Crítico:", err);
-                document.querySelector('#loading p').innerText = "Erro ao carregar dados. Verifique a planilha.";
-            }
+        html += `
+          <tr>
+            <td style="white-space: nowrap;"><div class="flight-gate">${car.rota}</div></td>
+            <td><strong style="color:#fff;">${car.driverNome}</strong><br><small style="color:var(--text-muted);">ID: ${car.idDriver}</small></td>
+            <td><span style="background:#131a2e; padding:4px 8px; border-radius:4px; font-weight:700; color:#38bdf8;">${car.modal}</span></td>
+            <td>${car.transportadora}</td>
+            <td class="mono-time" style="color:var(--text-muted);">${car.validationEi}</td>
+            <td class="mono-time" style="font-size:1.15rem; color:#fff;">${fmtMinSec(car.elap)} min</td>
+            <td style="text-align:right;">${badge}</td>
+          </tr>
+        `;
+      });
+      tb.innerHTML = html;
+      if (critCount > 0) soundBeep();
+    }
+
+    function buildFilters() {
+      const dates = [...new Set(dataset.map(d => d.data).filter(Boolean))];
+      const modais = [...new Set(dataset.map(d => d.modal).filter(Boolean))];
+      const transps = [...new Set(dataset.map(d => d.transportadora).filter(Boolean))];
+
+      populateDropdown("filtro-data", dates);
+      populateDropdown("filtro-modal", modais);
+      populateDropdown("filtro-transp", transps);
+    }
+
+    function populateDropdown(id, items) {
+      const el = document.getElementById(id);
+      if (el.options.length > 1) return;
+      items.forEach(it => {
+        const opt = document.createElement("option");
+        opt.value = it; opt.innerText = it;
+        el.appendChild(opt);
+      });
+    }
+
+    function runAnalytics() {
+      const selD = document.getElementById("filtro-data").value;
+      const selM = document.getElementById("filtro-modal").value;
+      const selT = document.getElementById("filtro-transp").value;
+
+      const filtered = dataset.filter(d => {
+        return (selD === 'ALL' || d.data === selD) &&
+               (selM === 'ALL' || d.modal === selM) &&
+               (selT === 'ALL' || d.transportadora === selT);
+      });
+
+      const faixas = { "< 7m": 0, "7-10m": 0, "10-15m": 0, "> 15m": 0 };
+      const horas = {}, modais = {}, transps = {}, drivers = {};
+      let totalSec = 0, count = 0, onTime = 0;
+
+      filtered.forEach(d => {
+        const ei = parseSec(d.validationEi);
+        const co = parseSec(d.checkOut);
+
+        if (ei !== null && co !== null && co >= ei) {
+          const tmcMin = (co - ei) / 60;
+          totalSec += (co - ei);
+          count++;
+          if (tmcMin <= 10) onTime++; // SLA meta <= 10 min
+
+          if (tmcMin < 7) faixas["< 7m"]++;
+          else if (tmcMin <= 10) faixas["7-10m"]++;
+          else if (tmcMin <= 15) faixas["10-15m"]++;
+          else faixas["> 15m"]++;
+
+          const hBlock = d.checkOut.split(":")[0] + "h";
+          horas[hBlock] = (horas[hBlock] || 0) + 1;
+
+          if (!modais[d.modal]) modais[d.modal] = [];
+          modais[d.modal].push(tmcMin);
+
+          if (!transps[d.transportadora]) transps[d.transportadora] = [];
+          transps[d.transportadora].push(tmcMin);
+
+          const dKey = `${d.driverNome} (${d.modal})`;
+          if (!drivers[dKey]) drivers[dKey] = [];
+          drivers[dKey].push(tmcMin);
         }
+      });
 
-        // PARSER BLINDADO (Corrige o problema do load infinito)
-        function parseData(csv) {
-            const lines = csv.split(/\r?\n/);
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                
-                // Trata CSV que pode vir com vírgula ou ponto e vírgula
-                const delimiter = lines[i].includes(';') ? ';' : ',';
-                const cols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
-                
-                if (cols.length < 8) continue;
+      document.getElementById("mgr-kpi-total").innerText = count;
+      document.getElementById("mgr-kpi-tmc").innerText = count ? `${(totalSec / count / 60).toFixed(1)} min` : "0.0 min";
+      document.getElementById("mgr-kpi-sla").innerText = count ? `${((onTime / count) * 100).toFixed(1)}%` : "0.0%";
 
-                data.push({
-                    data: cols[1],
-                    hub: cols[4],
-                    carrier: cols[6],
-                    profile: cols[7],
-                    qty: parseInt(cols[8]) || 0
-                });
-            }
-            return data;
+      let fastest = "--", minAvg = 9999;
+      Object.keys(modais).forEach(m => {
+        const avg = modais[m].reduce((a, b) => a + b, 0) / modais[m].length;
+        if (avg < minAvg) { minAvg = avg; fastest = `${m} (${avg.toFixed(1)}m)`; }
+      });
+      document.getElementById("mgr-kpi-fastest").innerText = fastest;
+
+      createDoughnut('chartFaixas', Object.keys(faixas), Object.values(faixas));
+      createBar('chartHoras', Object.keys(horas).sort(), Object.keys(horas).sort().map(k => horas[k]), '#38bdf8');
+      createAvgBar('chartModal', modais, '#ff5722');
+      createAvgBar('chartTransp', transps, '#8b5cf6');
+      createDriversBar('chartDrivers', drivers);
+    }
+
+    function createDoughnut(id, labels, values) {
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(document.getElementById(id), {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'], borderColor: '#0d1322', borderWidth: 2 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: '#cbd5e1', font: { weight: 700 } } },
+            datalabels: { color: '#fff', font: { weight: '800', size: 11 }, formatter: v => v > 0 ? v : '' }
+          }
         }
+      });
+    }
 
-        function setupFilters() {
-            const createOptions = (id, key) => {
-                const items = [...new Set(db.map(d => d[key]))].sort();
-                const select = document.getElementById(id);
-                items.forEach(i => {
-                    const opt = document.createElement('option');
-                    opt.value = i; opt.textContent = i;
-                    select.appendChild(opt);
-                });
-                select.addEventListener('change', runFilters);
-            };
-
-            createOptions('f-date', 'data');
-            createOptions('f-hub', 'hub');
-            createOptions('f-carrier', 'carrier');
-            createOptions('f-profile', 'profile');
-            document.getElementById('mainSearch').addEventListener('input', renderTable);
+    function createBar(id, labels, values, color) {
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(document.getElementById(id), {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 6, maxBarThickness: 42 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: color, font: { weight: '800', size: 11 } } },
+          scales: {
+            y: { grid: { color: '#1c2742' }, ticks: { color: '#64748b' } },
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { weight: 700 } } }
+          }
         }
+      });
+    }
 
-        function runFilters() {
-            const d = document.getElementById('f-date').value;
-            const h = document.getElementById('f-hub').value;
-            const c = document.getElementById('f-carrier').value;
-            const p = document.getElementById('f-profile').value;
-
-            filtered = db.filter(i => {
-                return (d === 'all' || i.data === d) &&
-                       (h === 'all' || i.hub === h) &&
-                       (c === 'all' || i.carrier === c) &&
-                       (p === 'all' || i.profile === p);
-            });
-            renderAll();
+    function createAvgBar(id, obj, color) {
+      const labels = Object.keys(obj);
+      const vals = labels.map(k => parseFloat((obj[k].reduce((a, b) => a + b, 0) / obj[k].length).toFixed(1)));
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(document.getElementById(id), {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ data: vals, backgroundColor: color, borderRadius: 6, maxBarThickness: 45 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: '#fff', font: { weight: '800', size: 11 }, formatter: v => `${v} min` } },
+          scales: {
+            y: { grid: { color: '#1c2742' }, ticks: { color: '#64748b' } },
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { weight: 700 } } }
+          }
         }
+      });
+    }
 
-        function groupSum(data, key) {
-            return data.reduce((acc, curr) => {
-                acc[curr[key]] = (acc[curr[key]] || 0) + curr.qty;
-                return acc;
-            }, {});
+    function createDriversBar(id, obj) {
+      const list = Object.keys(obj).map(k => {
+        const arr = obj[k];
+        return { name: k, avg: parseFloat((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1)) };
+      }).sort((a, b) => b.avg - a.avg).slice(0, 8);
+
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(document.getElementById(id), {
+        type: 'bar',
+        data: { labels: list.map(d => d.name), datasets: [{ data: list.map(d => d.avg), backgroundColor: '#ef4444', borderRadius: 5, maxBarThickness: 18 }] },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', color: '#fca5a5', font: { weight: '800', size: 10 }, formatter: v => `${v} min` } },
+          scales: {
+            x: { grid: { color: '#1c2742' }, ticks: { color: '#64748b' } },
+            y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { weight: 700, size: 10 } } }
+          }
         }
+      });
+    }
 
-        function renderAll() {
-            updateKPIs();
-            renderEvolucao();
-            renderPerfis();
-            renderCarrier();
-            renderHub();
-            renderTable();
-        }
+    setInterval(() => {
+      document.getElementById("clock-txt").innerText = new Date().toLocaleTimeString('pt-BR');
+      if (activeTab === 'ops') renderOps();
+    }, 1000);
 
-        function updateKPIs() {
-            const total = filtered.reduce((acc, c) => acc + c.qty, 0);
-            document.getElementById('kpi-total').innerText = total.toLocaleString();
-
-            const grpHub = groupSum(filtered, 'hub');
-            const topHub = Object.entries(grpHub).sort((a,b) => b[1] - a[1])[0] || ['---', 0];
-            document.getElementById('kpi-hub').innerText = topHub[0];
-            document.getElementById('kpi-hub-val').innerText = `${topHub[1]} veículos`;
-
-            const grpCarrier = groupSum(filtered, 'carrier');
-            const topCarrier = Object.entries(grpCarrier).sort((a,b) => b[1] - a[1])[0] || ['---', 0];
-            document.getElementById('kpi-carrier').innerText = topCarrier[0];
-            document.getElementById('kpi-carrier-val').innerText = `${topCarrier[1]} veículos`;
-
-            document.getElementById('kpi-active-hubs').innerText = [...new Set(filtered.map(d => d.hub))].length;
-        }
-
-        // GESTOR DE GRÁFICOS (Com suporte a Datalabels)
-        function createChart(id, type, labels, data, color, options = {}) {
-            if (charts[id]) charts[id].destroy();
-            const ctx = document.getElementById(id).getContext('2d');
-            
-            charts[id] = new Chart(ctx, {
-                type: type,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: color,
-                        borderRadius: 6,
-                        borderWidth: 0,
-                        tension: 0.3,
-                        fill: type === 'line'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: type === 'doughnut' },
-                        datalabels: {
-                            display: true,
-                            anchor: 'end',
-                            align: 'top',
-                            color: '#1f2937',
-                            font: { weight: 'bold', size: 10 },
-                            formatter: Math.round
-                        }
-                    },
-                    scales: type === 'doughnut' ? {} : {
-                        y: { display: false },
-                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } }
-                    },
-                    ...options
-                }
-            });
-        }
-
-        function renderEvolucao() {
-            const grp = groupSum(filtered, 'data');
-            createChart('chartEvolucao', 'line', Object.keys(grp), Object.values(grp), 'rgba(238, 77, 45, 0.1)', {
-                datasets: [{ 
-                    data: Object.values(grp), 
-                    borderColor: '#ee4d2d', 
-                    backgroundColor: 'rgba(238, 77, 45, 0.05)', 
-                    fill: true 
-                }]
-            });
-        }
-
-        function renderPerfis() {
-            const grp = groupSum(filtered, 'profile');
-            const sorted = Object.entries(grp).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            createChart('chartPerfis', 'doughnut', sorted.map(x => x[0]), sorted.map(x => x[1]), 
-                ['#ee4d2d', '#1f2937', '#ff7337', '#4b5563', '#9ca3af'], {
-                    plugins: { datalabels: { color: '#fff' } }
-                }
-            );
-        }
-
-        function renderCarrier() {
-            const grp = groupSum(filtered, 'carrier');
-            const sorted = Object.entries(grp).sort((a,b) => b[1] - a[1]);
-            createChart('chartCarrier', 'bar', sorted.map(x => x[0]), sorted.map(x => x[1]), '#1f2937');
-        }
-
-        function renderHub() {
-            const grp = groupSum(filtered, 'hub');
-            // ORDENAÇÃO DO MAIOR PARA O MENOR
-            const sorted = Object.entries(grp).sort((a,b) => b[1] - a[1]);
-            createChart('chartHub', 'bar', sorted.map(x => x[0]), sorted.map(x => x[1]), '#ee4d2d');
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('fleetTableBody');
-            const search = document.getElementById('mainSearch').value.toLowerCase();
-            const rows = filtered.filter(f => f.hub.toLowerCase().includes(search) || f.carrier.toLowerCase().includes(search));
-            
-            tbody.innerHTML = rows.map(r => `
-                <tr class="hover:bg-orange-50/50 transition-colors">
-                    <td class="px-8 py-4 text-slate-400 text-xs">${r.data}</td>
-                    <td class="px-8 py-4 text-slate-800">${r.hub}</td>
-                    <td class="px-8 py-4">${r.carrier}</td>
-                    <td class="px-8 py-4"><span class="bg-slate-100 text-[10px] px-2 py-1 rounded uppercase">${r.profile}</span></td>
-                    <td class="px-8 py-4 text-right text-orange-600 font-black">${r.qty.toLocaleString()}</td>
-                </tr>
-            `).join('');
-        }
-
-        window.onload = init;
-    </script>
+    fetchApiData();
+    setInterval(fetchApiData, 5000);
+  </script>
 </body>
 </html>
